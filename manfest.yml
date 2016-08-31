@@ -1,0 +1,10 @@
+---
+applications:
+- name: chaoticbots
+  framework: node
+  runtime: node08
+  memory: 512M
+  instances: 1
+  host: chaoticbots
+  path: .
+  command: node app.js

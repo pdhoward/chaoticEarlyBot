@@ -1,28 +1,35 @@
 'use strict';
 
-import express from 'express';
-import path from 'path';
+import express                    from 'express';
+import path                       from 'path';
 
-import mongoose from 'mongoose';
+import mongoose                   from 'mongoose';
 
-import { renderToString } from 'react-dom/server'
-import { Provider } from 'react-redux'
-import React from 'react';
-import configureStore from '../common/store/configureStore'
-import { RouterContext, match } from 'react-router';
-import routes from '../common/routes';
-import { createLocation } from 'history';
-import cors from 'cors';
+import { renderToString }         from 'react-dom/server'
+import { Provider }               from 'react-redux'
+import React                      from 'react';
+import configureStore             from '../common/store/configureStore'
+import { RouterContext, match }   from 'react-router';
+import routes                     from '../common/routes';
+import { createLocation }         from 'history';
+import cors                       from 'cors';
 
-import User from './models/User.js';
-import passport from 'passport';
+import User                       from './models/User.js';
+import passport                   from 'passport';
 require('../../config/passport')(passport);
-import SocketIo from 'socket.io';
+import SocketIo                   from 'socket.io';
+import setup                      from '../../setup';
 const app = express();
 
-//set env vars
-process.env.MONGOLAB_URI = process.env.MONGOLAB_URI || 'mongodb://localhost/chat_dev';
-process.env.PORT = process.env.PORT || 3000;
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+////////Create our server object with configurations -- either in the cloud or local/////////
+////////////////////////////////////////////////////////////////////////////////////////////
+
+var host = setup.SERVER.HOST;
+var port = setup.SERVER.PORT;
+process.env.MONGOLAB_URI = process.env.MONGOLAB_URI || 'mongodb://xio:cha0ticb0t@ds019936.mlab.com:19936/chaoticbots';
 
 // connect our DB
 mongoose.connect(process.env.MONGOLAB_URI);
@@ -78,7 +85,7 @@ app.get('/*', function(req, res) {
   })
 })
 
-const server = app.listen(process.env.PORT, function(err) {
+const server = app.listen(port, function(err) {
   if (err) {
     console.log(err);
     return;
@@ -99,7 +106,7 @@ function renderFullPage(html, initialState) {
         <link rel="icon" href="./favicon.ico" type="image/x-icon" />
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-        <title>React Redux Socket.io Chat</title>
+        <title>ChaoticBots</title>
       </head>
       <body>
         <container id="react">${html}</container>
