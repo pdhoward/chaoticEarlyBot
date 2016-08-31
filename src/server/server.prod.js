@@ -13,6 +13,7 @@ import { RouterContext, match }   from 'react-router';
 import routes                     from '../common/routes';
 import { createLocation }         from 'history';
 import cors                       from 'cors';
+import favicon                    from 'serve-favicon';
 
 import User                       from './models/User.js';
 import passport                   from 'passport';
@@ -53,6 +54,7 @@ app.use('/api', usersRouter);
 app.use('/api', channelRouter);
 
 app.use('/', express.static(path.join(__dirname, '../..', 'static')));
+app.use(favicon(path.join(__dirname + '/static/favicon.ico')));
 
 app.get('/*', function(req, res) {
 

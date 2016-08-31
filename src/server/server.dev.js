@@ -19,6 +19,7 @@ import webpackConfig              from '../../webpack.config.dev'
 const compiler = webpack(webpackConfig);
 import User                       from './models/User.js';
 import passport                   from 'passport';
+import favicon                    from 'serve-favicon';
 require('../../config/passport')(passport);
 import SocketIo                   from 'socket.io';
 import setup                      from '../../setup';
@@ -64,6 +65,7 @@ app.use('/api', usersRouter);
 app.use('/api', channelRouter);
 
 app.use('/', express.static(path.join(__dirname, '..', 'static')));
+app.use(favicon(path.join(__dirname + '/static/favicon.ico')));
 
 app.get('/*', function(req, res) {
   const location = createLocation(req.url)
