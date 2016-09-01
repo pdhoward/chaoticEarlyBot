@@ -2,37 +2,35 @@
 
 import express                    from 'express';
 import path                       from 'path';
-
 import mongoose                   from 'mongoose';
-
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
 import React                      from 'react';
-import configureStore             from '../common/store/configureStore'
 import { RouterContext, match }   from 'react-router';
-import routes                     from '../common/routes';
 import { createLocation }         from 'history';
 import cors                       from 'cors';
 import favicon                    from 'serve-favicon';
-
-import User                       from './models/User.js';
 import passport                   from 'passport';
-require('../../config/passport')(passport);
 import SocketIo                   from 'socket.io';
+
+//configurations
+import configureStore             from '../common/store/configureStore'
+import routes                     from '../common/routes';
+import User                       from './models/User.js';
 import setup                      from '../../setup';
-const app = express();
 
-
+//oauth and security
+require('../../config/passport')(passport);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////Create our server object with configurations -- either in the cloud or local/////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+const app = express();
+
 const host =        setup.SERVER.HOST;
 const port =        setup.SERVER.PORT;
 const dbURI =       setup.SERVER.DB;
-
-//process.env.MONGOLAB_URI = process.env.MONGOLAB_URI || 'mongodb://xio:cha0ticb0t@ds019936.mlab.com:19936/chaoticbots';
 
 // connect our DB
 mongoose.connect(dbURI);

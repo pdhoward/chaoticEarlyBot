@@ -2,42 +2,44 @@
 
 import express                    from 'express';
 import path                       from 'path';
-
 import mongoose                   from 'mongoose';
-
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
 import React                      from 'react';
-import configureStore             from '../common/store/configureStore'
 import { RouterContext, match }   from 'react-router';
-import routes                     from '../common/routes';
 import {createLocation}           from 'history';
-import DevTools                   from '../common/containers/DevTools';
 import cors                       from 'cors';
-import webpack                    from 'webpack';
-import webpackConfig              from '../../webpack.config.dev'
-const compiler = webpack(webpackConfig);
-import User                       from './models/User.js';
 import passport                   from 'passport';
 import favicon                    from 'serve-favicon';
-require('../../config/passport')(passport);
 import SocketIo                   from 'socket.io';
+import bodyParser                 from 'body-parser'
+import colors                     from 'colors'
+
+// configurations
 import setup                      from '../../setup';
+import configureStore             from '../common/store/configureStore'
+import routes                     from '../common/routes';
+import User                       from './models/User.js';
 
-const app = express();
+// security and oauth
+require('../../config/passport')(passport);
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+////////Component and Configuration Related to the Development Server             /////////
+////////////////////////////////////////////////////////////////////////////////////////////
+import DevTools                   from '../common/containers/DevTools';
+import webpack                    from 'webpack';
+import webpackConfig              from '../../webpack.config.dev'
+const compiler =                  webpack(webpackConfig);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////Create our server object with configurations -- either in the cloud or local/////////
 ////////////////////////////////////////////////////////////////////////////////////////////
+const app =         express();
 
 const host =        setup.SERVER.HOST;
 const port =        setup.SERVER.PORT;
 const dbURI =       setup.SERVER.DB;
-
-//process.env.MONGOLAB_URI = process.env.MONGOLAB_URI || 'mongodb://xio:cha0ticb0t@ds019936.mlab.com:19936/chaoticbots';
-
-//process.env.PORT = process.env.PORT || 3000;
 
 // connect our DB
 mongoose.connect(dbURI);
@@ -46,16 +48,38 @@ process.on('uncaughtException', function (err) {
   console.log(err);
 });
 
+
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////// Middleware Config ////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
+app.use('/', express.static(path.join(__dirname, '../..', 'static')));
+app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
+
 app.use(cors());
 app.use(passport.initialize());
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+///////////////////        Development Server Only        //////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 app.use(require('webpack-dev-middleware')(compiler, {
   noInfo: true,
   publicPath: webpackConfig.output.publicPath
 }));
+
 app.use(require('webpack-hot-middleware')(compiler));
 
-//load routers
+//////////////////////////////////////////////////////////////////////////
+///////////////////////////// API CATALOGUE /////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
 const messageRouter = express.Router();
 const usersRouter = express.Router();
 const channelRouter = express.Router();
@@ -66,8 +90,11 @@ app.use('/api', messageRouter);
 app.use('/api', usersRouter);
 app.use('/api', channelRouter);
 
-app.use('/', express.static(path.join(__dirname, '../..', 'static')));
-app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////// MAIN ROUTE /////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
 
 app.get('/*', function(req, res) {
   const location = createLocation(req.url)
