@@ -2,7 +2,7 @@
   "name": "chaoticbot",
   "version": "0.0.1",
   "description": "curated 2 sided market with watson",
-  "main": "server.js",
+  "main": "src/server/server.js",
   "scripts": {
     "start": "node src/server/server",
     "dev": "node src/server/server",
@@ -93,5 +93,9 @@
     "socket.io": "^1.3.5",
     "socket.io-client": "^1.4.0",
     "style-loader": "^0.12.4"
-  }
+  },
+  "engines": {
+		"node": "*"
+	}
+
 }

@@ -1,10 +1,9 @@
 ---
 applications:
 - name: chaoticbots
-  framework: node
-  runtime: node08
   memory: 512M
   instances: 1
   host: chaoticbots
+  domain: mybluemix.net
   path: .
-  command: node src/server/server.js
+  command: npm start
