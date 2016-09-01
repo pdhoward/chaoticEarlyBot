@@ -1,7 +1,8 @@
 ---
 applications:
 - name: chaoticbots
-  memory: 512M
+  memory: 1024M
+  disk_quota: 1500M
   instances: 1
   host: chaoticbots
   domain: mybluemix.net

@@ -64,8 +64,8 @@ app.use('/api', messageRouter);
 app.use('/api', usersRouter);
 app.use('/api', channelRouter);
 
-app.use('/', express.static(path.join(__dirname, '..', 'static')));
-app.use(favicon(path.join(__dirname + '/static/favicon.ico')));
+app.use('/', express.static(path.join(__dirname, '../..', 'static')));
+app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
 
 app.get('/*', function(req, res) {
   const location = createLocation(req.url)

@@ -38,7 +38,7 @@ class WelcomePage extends Component {
         <div style={{display: 'flex', justifyContent: 'center', flexDirection: 'column'}}>
           <header style={{textAlign: 'center'}}>
             <p>ChaoticBots</p>
-            <p>Intelligent Customer Service</p>
+            <p>Engage, Serve and Transact</p>
           </header>
           <main>
           <form>
@@ -73,7 +73,7 @@ class WelcomePage extends Component {
       <div>
         <header style={{display: 'flex', justifyContent: 'center', flexGrow: '0', order: '0'}}>
           <div>
-            <h3 align="center"> ChaoticBots: Intelligence for Customer Service </h3>
+            <h3 align="center"> ChaoticBots: Engage, Serve and Transact </h3>
 
           </div>
         </header>
