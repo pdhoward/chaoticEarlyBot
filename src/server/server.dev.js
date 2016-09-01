@@ -31,14 +31,16 @@ const app = express();
 ////////Create our server object with configurations -- either in the cloud or local/////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-var host = setup.SERVER.HOST;
-var port = setup.SERVER.PORT;
-process.env.MONGOLAB_URI = process.env.MONGOLAB_URI || 'mongodb://xio:cha0ticb0t@ds019936.mlab.com:19936/chaoticbots';
+const host =        setup.SERVER.HOST;
+const port =        setup.SERVER.PORT;
+const dbURI =       setup.SERVER.DB;
+
+//process.env.MONGOLAB_URI = process.env.MONGOLAB_URI || 'mongodb://xio:cha0ticb0t@ds019936.mlab.com:19936/chaoticbots';
 
 //process.env.PORT = process.env.PORT || 3000;
 
 // connect our DB
-mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(dbURI);
 
 process.on('uncaughtException', function (err) {
   console.log(err);
@@ -115,7 +117,7 @@ const server = app.listen(port, host, function(err) {
     console.log(err);
     return;
   }
-  console.log('server listening on port: %s', port);
+  console.log('server listening on port: ' + port);
 });
 
 const io = new SocketIo(server, {path: '/api/chat'})
