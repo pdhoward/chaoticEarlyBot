@@ -86,11 +86,15 @@ app.use(require('webpack-hot-middleware')(compiler));
 ////////////////////////////////////////////////////////////////////////
 
 const messageRouter = express.Router();
+const watsonRouter = express.Router();
 const usersRouter = express.Router();
 const channelRouter = express.Router();
 require('./routes/message_routes')(messageRouter);
+require('./routes/watson_routes')(watsonRouter);
 require('./routes/channel_routes')(channelRouter);
 require('./routes/user_routes')(usersRouter, passport);
+
+app.use('/api', watsonRouter);
 app.use('/api', messageRouter);
 app.use('/api', usersRouter);
 app.use('/api', channelRouter);
