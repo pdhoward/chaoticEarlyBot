@@ -7,7 +7,8 @@ import welcomePage from './welcomePage';
 import userValidation from './userValidation';
 import environment from './environment';
 import {combineReducers} from 'redux';
-import {reducer as formReducer} from 'redux-form'
+import { routerReducer }   from 'react-router-redux';
+import {reducer as formReducer} from 'redux-form';
 
 const rootReducer = combineReducers({
   messages,
@@ -18,7 +19,8 @@ const rootReducer = combineReducers({
   welcomePage,
   userValidation,
   environment,
-  formReducer
+  formReducer,
+  routing: routerReducer
 });
 
 export default rootReducer;

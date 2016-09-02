@@ -1,12 +1,16 @@
 'use strict';
 
 import express                    from 'express';
+import serialize                  from 'serialize-javascript'
 import path                       from 'path';
 import mongoose                   from 'mongoose';
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
 import React                      from 'react';
-import { RouterContext, match }   from 'react-router';
+import { createMemoryHistory,
+         RouterContext,
+         match }                  from 'react-router';
+import { syncHistoryWithStore }   from 'react-router-redux'
 import {createLocation}           from 'history';
 import cors                       from 'cors';
 import passport                   from 'passport';
@@ -20,6 +24,7 @@ import setup                      from '../../setup';
 import configureStore             from '../common/store/configureStore'
 import routes                     from '../common/routes';
 import User                       from './models/User.js';
+import {HTML}                     from '../html/index';
 
 // security and oauth
 require('../../config/passport')(passport);
@@ -96,79 +101,45 @@ app.use('/api', channelRouter);
 //////////////////////////////////////////////////////////////////////
 
 
-app.get('/*', function(req, res) {
-  const location = createLocation(req.url)
-  match({ routes, location }, (err, redirectLocation, renderProps) => {
 
-    const initialState = {
-      auth: {
-        user: {
-          username: 'tester123',
-          id: 0,
-          socketID: null
-        }
-      }
+app.use(function (req, res) {
+
+
+  const memoryHistory = createMemoryHistory(req.Url)
+  const store = configureStore(memoryHistory)
+  const history = syncHistoryWithStore(memoryHistory, store)
+
+
+  match({ history, routes, location: req.url }, (error, redirectLocation, renderProps) => {
+    if (error) {
+      res.status(500).send(error.message)
+    } else if (redirectLocation) {
+      res.redirect(302, redirectLocation.pathname + redirectLocation.search)
+    } else if (renderProps) {
+      const content = renderToString(
+        <Provider store={store}>
+          <RouterContext {...renderProps}/>
+        </Provider>
+      )
+
+      res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
+
     }
-    const store = configureStore(initialState);
-    // console.log(redirectLocation);
-    // if(redirectLocation) {
-    //   return res.status(302).end(redirectLocation);
-    // }
-
-
-    if(err) {
-      console.error(err);
-      return res.status(500).end('Internal server error');
-    }
-
-    if(!renderProps) {
-      return res.status(404).end('Not found');
-    }
-    const InitialView = (
-      <Provider className="root" store={store}>
-        <div style={{height: '100%'}}>
-          <RouterContext {...renderProps} />
-          {process.env.NODE_ENV !== 'production' && <DevTools />}
-        </div>
-      </Provider>
-    );
-
-    const finalState = store.getState();
-    const html = renderToString(InitialView)
-    res.status(200).end(renderFullPage(html, finalState));
   })
 })
+
+
+///////////////////////////////////////////////////////////////////////
+/////////////////Launch Server---  Connect Sockets ////////////////////
+//////////////////////////////////////////////////////////////////////
 
 const server = app.listen(port, host, function(err) {
   if (err) {
     console.log(err);
     return;
   }
-  console.log('server listening on port: ' + port);
+  console.log('server listening on port: '.green + port);
 });
 
 const io = new SocketIo(server, {path: '/api/chat'})
 const socketEvents = require('./socketEvents')(io);
-
-function renderFullPage(html, initialState) {
-  return `
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" />
-        <link rel="icon" href="./favicon.ico" type="image/x-icon" />
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
-        <title>ChaoticBots</title>
-      </head>
-      <body>
-        <container id="react">${html}</container>
-        <script>
-          window.__INITIAL_STATE__ = ${JSON.stringify(initialState)}
-        </script>
-        <script src="/dist/bundle.js"></script>
-      </body>
-    </html>
-  `
-}

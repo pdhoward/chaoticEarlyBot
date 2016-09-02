@@ -1,16 +1,23 @@
-import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
-import promiseMiddleware from '../middleware/promiseMiddleware';
-import DevTools from '../containers/DevTools';
-import thunk from 'redux-thunk';
-import rootReducer from '../reducers'
+import { createStore,
+         combineReducers,
+         applyMiddleware,
+         compose }                from 'redux';
+import { routerMiddleware }       from 'react-router-redux';
+import promiseMiddleware          from '../middleware/promiseMiddleware';
+import DevTools                   from '../containers/DevTools';
+import thunk                      from 'redux-thunk';
+import rootReducer                from '../reducers';
 
-const finalCreateStore = compose(
-  applyMiddleware(thunk, promiseMiddleware),
-  DevTools.instrument()
-)(createStore);
+console.log(">>>>>>>ENTERED STORE <<<<<<<<<<<<<<<")
 
-export default function configureStore(initialState) {
-  const store = finalCreateStore(rootReducer, initialState);
+export default function configureStore(history, initialState) {
+
+
+  const enhancer = compose(
+    applyMiddleware(thunk, routerMiddleware(history), promiseMiddleware),
+    DevTools.instrument());
+
+  const store = createStore(rootReducer, initialState, enhancer);
 
   if (module.hot) {
     // Enable Webpack hot module replacement for reducers
