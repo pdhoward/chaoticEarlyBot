@@ -1,15 +1,20 @@
-var Message = require('../models/Message');
-var bodyparser = require('body-parser');
 
-require( 'dotenv' ).config( {silent: true} );
-var watson = require( 'watson-developer-cloud' );  // watson sdk
+//////////////////////////////////////////////////////////////////////////
+///////////////////////////// Watson API ////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+var Message =           require('../models/Message');
+var bodyparser =        require('body-parser');
 
 // The following requires are needed for logging purposes
-var uuid = require( 'uuid' );
-var vcapServices = require( 'vcap_services' );
-var basicAuth = require( 'basic-auth-connect' );
+var uuid =              require( 'uuid' );
+var vcapServices =      require( 'vcap_services' );
+var basicAuth =         require( 'basic-auth-connect' );
 var logs = null;
 
+// watson sdk and workspace id
+require( 'dotenv' ).config( {silent: true} );
+var watson =            require( 'watson-developer-cloud' );
 
 // Create the service wrapper
 var conversation = watson.conversation( {
@@ -19,9 +24,6 @@ var conversation = watson.conversation( {
   version_date: '2016-07-11',
   version: 'v1'
 } );
-
-
-console.log(">>>>>>>ENTERED WATSON ROUTER<<<<<<<")
 
 module.exports = function(router) {
   router.use(bodyparser.json());
@@ -55,7 +57,7 @@ module.exports = function(router) {
         // The client must maintain context/state
         payload.context = req.body.context;
       }
-      
+
       console.log("payload = " + JSON.stringify(payload));
 
     // Send the input to the conversation service

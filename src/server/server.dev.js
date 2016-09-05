@@ -1,9 +1,11 @@
 'use strict';
 
 import express                    from 'express';
+import session                    from 'express-session';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
 import mongoose                   from 'mongoose';
+
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
 import React                      from 'react';
@@ -21,6 +23,7 @@ import colors                     from 'colors'
 
 // configurations
 import setup                      from '../../setup';
+import secrets                    from './secrets';
 import configureStore             from '../common/store/configureStore'
 import routes                     from '../common/routes';
 import User                       from './models/User.js';
@@ -46,15 +49,6 @@ const host =        setup.SERVER.HOST;
 const port =        setup.SERVER.PORT;
 const dbURI =       setup.SERVER.DB;
 
-// connect our DB
-mongoose.connect(dbURI);
-
-process.on('uncaughtException', function (err) {
-  console.log(err);
-});
-
-
-
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////// Middleware Config ////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -62,12 +56,55 @@ process.on('uncaughtException', function (err) {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-
-app.use('/', express.static(path.join(__dirname, '../..', 'static')));
 app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
-
+app.use('/', express.static(path.join(__dirname, '../..', 'static')));
 app.use(cors());
+app.options('*', cors());
 app.use(passport.initialize());
+
+
+
+///////////////////////////////////////////////////////////////////////
+/////////////////// database and session setup ////////////////////////
+//////////////////////////////////////////////////////////////////////
+mongoose.connect(dbURI);
+const MongoDBStore = require('connect-mongodb-session')(session);
+
+const track = new MongoDBStore(
+      { uri: dbURI,
+        collection: 'tracksessions'});
+
+// Catch errors
+  track.on('error', function(error) {
+    console.log("error with session store = " + error);
+  });
+
+
+const sessionSecret       = secrets.SECRETS.SESSIONSECRET;
+
+const sessionParms = {
+    secret: sessionSecret,
+    cookie: {
+      secure: false,
+      httpOnly: false,
+      maxAge: 1000 * 60 * 60 * 24 * 7 }, // 1week
+      store: track
+    }
+
+//allows us to use secure cookies in production but still test in dev
+// note cookie.secure is recommended but requires https enabled website
+// trust proxy required if using nodejs behind a proxy (like ngnx)
+if (app.get('env') === 'production') {
+    app.set('trust proxy', 1) // trust first proxy
+    sessionParms.cookie.secure = true // serve secure cookies
+   }
+
+app.use(session(sessionParms));
+
+process.on('uncaughtException', function (err) {
+  console.log(err);
+   });
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -89,6 +126,7 @@ const messageRouter = express.Router();
 const watsonRouter = express.Router();
 const usersRouter = express.Router();
 const channelRouter = express.Router();
+
 require('./routes/message_routes')(messageRouter);
 require('./routes/watson_routes')(watsonRouter);
 require('./routes/channel_routes')(channelRouter);
@@ -98,6 +136,7 @@ app.use('/api', watsonRouter);
 app.use('/api', messageRouter);
 app.use('/api', usersRouter);
 app.use('/api', channelRouter);
+
 
 
 ///////////////////////////////////////////////////////////////////////
