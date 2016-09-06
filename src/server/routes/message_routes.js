@@ -1,5 +1,12 @@
-var Message = require('../models/Message');
-var bodyparser = require('body-parser');
+
+
+//////////////////////////////////////////////////////////////////////////
+///////////////////////////// Message Routes ////////////////////////////
+////////////////////////////////////////////////////////////////////////
+
+
+const Message = require('../models/Message');
+const bodyparser = require('body-parser');
 
 module.exports = function(router) {
   router.use(bodyparser.json());
@@ -29,6 +36,12 @@ module.exports = function(router) {
   //post a new message to db
   router.post('/newmessage', function(req, res) {
     var newMessage = new Message(req.body);
+
+    console.log(">>> USER TEXT<<<<");
+    console.log(newMessage);
+    console.log(">>> RAW TEXT<<<<");
+    console.log(req.body);
+    
     newMessage.save(function (err, data) {
       if(err) {
         console.log(err);

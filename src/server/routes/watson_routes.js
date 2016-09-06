@@ -1,23 +1,24 @@
 
 //////////////////////////////////////////////////////////////////////////
-///////////////////////////// Watson API ////////////////////////////////
+///////////////////////////// Watson Routes /////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-var Message =           require('../models/Message');
-var bodyparser =        require('body-parser');
-
-// The following requires are needed for logging purposes
-var uuid =              require( 'uuid' );
-var vcapServices =      require( 'vcap_services' );
-var basicAuth =         require( 'basic-auth-connect' );
-var logs = null;
-
-// watson sdk and workspace id
+const chatMessage =         require('../models/Message');
+const watsonResponse =      require('../models/WatsonResponse');
+const bodyparser =          require('body-parser');
+const uuid =                require( 'uuid' );
+const vcapServices =        require( 'vcap_services' );
+const basicAuth =           require( 'basic-auth-connect' );
 require( 'dotenv' ).config( {silent: true} );
-var watson =            require( 'watson-developer-cloud' );
 
-// Create the service wrapper
-var conversation = watson.conversation( {
+const logs = null;
+const workspace = process.env.WORKSPACE_ID || 'workspace-id';
+
+
+// watson conversation parameters
+const watson =             require( 'watson-developer-cloud' );
+
+const conversation = watson.conversation( {
   url: 'https://gateway.watsonplatform.net/conversation/api',
   username: process.env.CONVERSATION_USERNAME || '<username>',
   password: process.env.CONVERSATION_PASSWORD || '<password>',
@@ -25,62 +26,72 @@ var conversation = watson.conversation( {
   version: 'v1'
 } );
 
+var message = {
+  workspace_id: workspace,
+  input: {
+    text: ''
+  },
+  context: {},
+  alternate_intents: false,
+  entities: [],
+  intents: [],
+  output: {}
+}
+
+
+////////////////////////////////////////////////////////////
+//////////////////Watson APIs /////////////////////////////
+//////////////////////////////////////////////////////////
+
+
+
 module.exports = function(router) {
+
   router.use(bodyparser.json());
 
   //evaluate a new message
-  router.post('/newmessage', function(req, res) {
+  router.post('/newmessage', function(req, res, next) {
 
     // for every new message -- Watson looks at it and responds
     console.log(">>>>>>>WATSON IS EVALUATING POST<<<<<<<")
     console.log("message = " + JSON.stringify(req.body));
 
-    var watsonMessage = new Message(req.body);
+    const watsonMessage = new chatMessage(req.body);
+    message.input.text = watsonMessage.text;
 
-    ///////////////////////////////////////////////////////////////
-    var workspace = process.env.WORKSPACE_ID || '<workspace-id>';
+    if (req.session.context) {
+      message.context = req.session.context;
+    }
 
-    if ( !workspace || workspace === '<workspace-id>' ) {
+    if ( ! message.workspace_id || message.workspace_id === 'workspace-id' ) {
         console.log(">>>>>>>>>>>>>MISSING WORSPACE ID <<<<<<<<<<<<<<<")
       }
 
-    var payload = {
-      workspace_id: workspace,
-      context: {},
-      input: {}
-    };
-
-    if ( req.body ) {
-        payload.input = watsonMessage.text
-      }
-    if ( req.body.context ) {
-        // The client must maintain context/state
-        payload.context = req.body.context;
-      }
-
-      console.log("payload = " + JSON.stringify(payload));
-
     // Send the input to the conversation service
-    conversation.message( payload, function(err, data) {
-      if ( err ) {
-//        return res.status( err.code || 500 ).json( err );
-          console.log(">>>>>>WATSON ERROR<<<<<<<<<<")
-          }
-//      return res.json( updateMessage( payload, data ) );
+    conversation.message( message, function(err, data) {
+      if ( err )  return res.status( err.code || 500 ).json( err );
+
+//    return res.json( updateMessage( payload, data ) );
       console.log(">>>>>>>>>WATSON RESPONSE<<<<<<<<<<")
       console.log(data);
-    });
 
+      const newwatsonResponse = new watsonResponse(data);
+      req.session.context = newwatsonResponse.context;
 
-    // need to update this to ensure that watson's message gets saved ----- not user message
-        watsonMessage.save(function (err, data) {
+      newwatsonResponse.save(function (err, data) {
           if(err) {
             console.log(err);
             return res.status(500).json({msg: 'internal server error'});
-          }
-    //      res.json(data);
-        console.log(">>>>>>>SAVED WATSON RESPONSE TO MONGO<<<<<<<<<<")
+            }
+          watsonMessage.text = newwatsonResponse.output.text
+          watsonMessage.user.username = "Watson";
+          res.json(watsonMessage);
+          console.log(">>>Watson Text<<<<");
+          console.log(watsonMessage);
+          next()
+
         });
+      });
 
     });
   }

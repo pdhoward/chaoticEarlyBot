@@ -8,8 +8,6 @@ import DevTools                   from '../containers/DevTools';
 import thunk                      from 'redux-thunk';
 import rootReducer                from '../reducers';
 
-console.log(">>>>>>>ENTERED STORE <<<<<<<<<<<<<<<")
-
 export default function configureStore(history, initialState) {
 
 

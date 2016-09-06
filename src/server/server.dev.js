@@ -2,6 +2,7 @@
 
 import express                    from 'express';
 import session                    from 'express-session';
+import cookieParser               from 'cookie-parser';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
 import mongoose                   from 'mongoose';
@@ -53,15 +54,12 @@ const dbURI =       setup.SERVER.DB;
 ///////////////////////// Middleware Config ////////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
 app.use('/', express.static(path.join(__dirname, '../..', 'static')));
 app.use(cors());
-app.options('*', cors());
-app.use(passport.initialize());
-
+//app.options('*', cors());
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -84,9 +82,11 @@ const sessionSecret       = secrets.SECRETS.SESSIONSECRET;
 
 const sessionParms = {
     secret: sessionSecret,
+    saveUninitialized: false,
+    resave: true,
     cookie: {
       secure: false,
-      httpOnly: false,
+      httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24 * 7 }, // 1week
       store: track
     }
@@ -99,6 +99,7 @@ if (app.get('env') === 'production') {
     sessionParms.cookie.secure = true // serve secure cookies
    }
 
+//app.use(cookieParser(sessionSecret));
 app.use(session(sessionParms));
 
 process.on('uncaughtException', function (err) {
@@ -106,6 +107,8 @@ process.on('uncaughtException', function (err) {
    });
 
 
+app.use(passport.initialize());
+app.use(passport.session());
 
 /////////////////////////////////////////////////////////////////////////////////////
 ///////////////////        Development Server Only        //////////////////////////
@@ -117,6 +120,25 @@ app.use(require('webpack-dev-middleware')(compiler, {
 }));
 
 app.use(require('webpack-hot-middleware')(compiler));
+
+
+///////////////////////////////////////////////////////////////////////
+///////////////manage session state via express.session///////////////
+//////////////////////////////////////////////////////////////////////
+
+
+app.get('/', function(req, res, next) {
+  var sessionState = req.session
+
+  if (sessionState.views) {
+    sessionState.views++
+    } else {
+    sessionState.views = 1;
+    sessionState.user = req.body.username;  
+    }
+  next();
+  })
+
 
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////// API CATALOGUE /////////////////////////////
