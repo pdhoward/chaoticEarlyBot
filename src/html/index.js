@@ -13,7 +13,7 @@ const HTML = ({ content, store }) => (
     </head>
     <body>
     <div>
-      <div id="react" dangerouslySetInnerHTML={{ __html: content }}/>
+      <div id="root" dangerouslySetInnerHTML={{ __html: content }}/>
       <script dangerouslySetInnerHTML={{ __html: `window.__initialState__=${serialize(store.getState())};` }}/>
       <script src="/dist/bundle.js"/>
     </div>

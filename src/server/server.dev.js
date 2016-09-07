@@ -134,7 +134,7 @@ app.get('/', function(req, res, next) {
     sessionState.views++
     } else {
     sessionState.views = 1;
-    sessionState.user = req.body.username;  
+    sessionState.user = req.body.username;
     }
   next();
   })
@@ -207,4 +207,11 @@ const server = app.listen(port, host, function(err) {
 });
 
 const io = new SocketIo(server, {path: '/api/chat'})
+
+io.on('connection', function(socket) {
+  console.log("someone just joined sockets")
+})
+
+app.set('socketio', io);
+
 const socketEvents = require('./socketEvents')(io);

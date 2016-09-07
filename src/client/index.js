@@ -10,7 +10,7 @@ import routes from '../common/routes';
 
 const initialState = window.__INITIAL_STATE__;
 const store = configureStore(initialState);
-const rootElement = document.getElementById('react');
+const rootElement = document.getElementById('root');
 
 
 ReactDOM.render(

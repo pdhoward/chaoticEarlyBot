@@ -3,12 +3,16 @@
 ///////////////////////////// Watson Routes /////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-const chatMessage =         require('../models/Message');
-const watsonResponse =      require('../models/WatsonResponse');
-const bodyparser =          require('body-parser');
-const uuid =                require( 'uuid' );
-const vcapServices =        require( 'vcap_services' );
-const basicAuth =           require( 'basic-auth-connect' );
+import chatMessage            from '../models/Message';
+import watsonResponse         from '../models/WatsonResponse';
+import bodyparser             from 'body-parser';
+import moment                 from 'moment';
+import uuid                   from 'node-uuid';
+import vcapServices           from 'vcap_services';
+import basicAuth              from 'basic-auth-connect';
+import colors                 from 'colors'
+
+
 require( 'dotenv' ).config( {silent: true} );
 
 const logs = null;
@@ -26,7 +30,7 @@ const conversation = watson.conversation( {
   version: 'v1'
 } );
 
-var message = {
+const message = {
   workspace_id: workspace,
   input: {
     text: ''
@@ -37,6 +41,22 @@ var message = {
   intents: [],
   output: {}
 }
+
+const buildMessageToSend = {
+  id: `${Date.now()}${uuid.v4()}`,
+  channelID: '',
+  text: '',
+  user: '',
+  time: moment.utc().format('lll')
+
+}
+
+const watsonUserID = {
+  username: 'Watson',
+  socketID: '/#testid'
+}
+
+var buildID = '';
 
 
 ////////////////////////////////////////////////////////////
@@ -52,42 +72,70 @@ module.exports = function(router) {
   //evaluate a new message
   router.post('/newmessage', function(req, res, next) {
 
-    // for every new message -- Watson looks at it and responds
-    console.log(">>>>>>>WATSON IS EVALUATING POST<<<<<<<")
-    console.log("message = " + JSON.stringify(req.body));
+    var io = req.app.get('socketio');
 
+    // for every new message emitted -- Watson looks at it and responds
     const watsonMessage = new chatMessage(req.body);
+
+    //prepare message to send to Watson
     message.input.text = watsonMessage.text;
 
     if (req.session.context) {
-      message.context = req.session.context;
-    }
+        message.context = req.session.context;};
 
     if ( ! message.workspace_id || message.workspace_id === 'workspace-id' ) {
-        console.log(">>>>>>>>>>>>>MISSING WORSPACE ID <<<<<<<<<<<<<<<")
-      }
+        return res.status( 500 );};
 
-    // Send the input to the conversation service
+    //prepare message to broadcast from watson once response is received
+
+    buildMessageToSend.channelID = watsonMessage.channelID;
+    buildMessageToSend.user = watsonUserID;
+    buildID = `${Date.now()}${uuid.v4()}`;
+    buildMessageToSend.id = buildID;
+
+    // Send the input to the Watson conversation service
     conversation.message( message, function(err, data) {
       if ( err )  return res.status( err.code || 500 ).json( err );
 
-//    return res.json( updateMessage( payload, data ) );
-      console.log(">>>>>>>>>WATSON RESPONSE<<<<<<<<<<")
-      console.log(data);
-
       const newwatsonResponse = new watsonResponse(data);
       req.session.context = newwatsonResponse.context;
+      console.log('>>req session context<<'.green);
+      console.log(req.session.context);
+      console.log('views = ' + req.session.views);
+      console.log('-----------------------'.green);
 
+      console.log('>>watson input<<'.green);
+      console.log(message);
+      console.log('-----------------------'.green);
+
+      console.log('>>watson response context<<'.green);
+      console.log(newwatsonResponse.context);
+      console.log('-----------------------'.green);
+
+      console.log('>>watson output<<'.green);
+      console.log(newwatsonResponse.output.text[0]);
+      console.log('-----------------------'.green);
+
+      //build and broadcast message
+      buildMessageToSend.text = newwatsonResponse.output.text[0];
+      console.log('>>Broadcast Message<<'.green);
+      console.log(buildMessageToSend);
+      console.log('-----------------------'.green);
+
+      io.to(buildMessageToSend.channelID).emit('new bc message', buildMessageToSend);
+
+      // save watson message
       newwatsonResponse.save(function (err, data) {
           if(err) {
             console.log(err);
             return res.status(500).json({msg: 'internal server error'});
             }
-          watsonMessage.text = newwatsonResponse.output.text
-          watsonMessage.user.username = "Watson";
-          res.json(watsonMessage);
-          console.log(">>>Watson Text<<<<");
-          console.log(watsonMessage);
+    //      watsonMessage.text = newwatsonResponse.output.text
+    //      watsonMessage.user.username = "Watson";
+  //        res.json(watsonMessage);
+          console.log(">>>Watson Message Saved<<<<");
+  //        console.log(watsonMessage);
+
           next()
 
         });
