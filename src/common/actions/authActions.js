@@ -106,8 +106,7 @@ export function signIn(user) {
     dispatch(requestSignIn())
      return fetch('/api/sign_in', {
       credentials: 'include',
-      method: 'post',
-      mode: 'cors',
+      method: 'post',  
       redirect: 'follow',
       headers: { 'Accept': 'application/json',
                  'Content-Type': 'application/json'

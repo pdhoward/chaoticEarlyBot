@@ -81,6 +81,7 @@ module.exports = function(router) {
     message.input.text = watsonMessage.text;
 
    // need a way to set message.context here
+    message.context = req.bag.context;
 
     if ( ! message.workspace_id || message.workspace_id === 'workspace-id' ) {
         return res.status( 500 );};
@@ -97,9 +98,9 @@ module.exports = function(router) {
       if ( err )  return res.status( err.code || 500 ).json( err );
 
       const newwatsonResponse = new watsonResponse(data);
-      req.session.context = newwatsonResponse.context;
-      console.log('>>req session context<<'.green);
-      
+      req.bag.context = newwatsonResponse.context;
+      console.log('>>req bag <<'.green);
+      console.log(JSON.stringify(req.bag));
       console.log('-----------------------'.green);
 
       console.log('>>watson input<<'.green);

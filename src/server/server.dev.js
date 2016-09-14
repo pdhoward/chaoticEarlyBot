@@ -134,7 +134,7 @@ app.use(function(req, res, next){
 
 	req.bag.cookies = req.cookies;
   console.log({cookie: req.cookies});
-
+  console.log(req.headers);
 	var url_parts = url.parse(req.url, true);
 	req.parameters = url_parts.query;
 	keys = Object.keys(req.parameters);

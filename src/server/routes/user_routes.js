@@ -30,7 +30,7 @@ module.exports = function loadUserRoutes(router, passport) {
   });
 
   router.post('/sign_in', passport.authenticate('local-login', { session: false}), function(req, res) {
-    res.json(req.user);
+    res.json(req.user);  
   });
 
   router.get('/signout', function(req, res) {
