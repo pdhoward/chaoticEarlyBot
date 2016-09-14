@@ -3,10 +3,10 @@
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////// Message Routes ////////////////////////////
 ////////////////////////////////////////////////////////////////////////
+import colors                 from 'colors'
+import Message                from '../models/Message';
+import bodyparser             from 'body-parser';
 
-
-const Message = require('../models/Message');
-const bodyparser = require('body-parser');
 
 module.exports = function(router) {
   router.use(bodyparser.json());
@@ -37,11 +37,11 @@ module.exports = function(router) {
   router.post('/newmessage', function(req, res) {
     var newMessage = new Message(req.body);
 
-    console.log(">>> USER TEXT<<<<");
+    console.log(">>> USER TEXT<<<<".red);
     console.log(newMessage);
-    console.log(">>> RAW TEXT<<<<");
+    console.log(">>> RAW TEXT<<<<".red);
     console.log(req.body);
-    
+
     newMessage.save(function (err, data) {
       if(err) {
         console.log(err);

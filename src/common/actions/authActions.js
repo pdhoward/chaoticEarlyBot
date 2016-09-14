@@ -49,7 +49,9 @@ function receiveSignOut() {
 export function signOut() {
   return dispatch => {
     dispatch(requestSignOut())
-    return fetch('/api/signout')
+    return fetch('/api/signout', {
+      credentials: 'include'
+    })
       .then(response => {
         if(response.ok) {
           cookie.remove('username')
@@ -66,6 +68,7 @@ export function signUp(user) {
     dispatch(requestSignUp())
     return fetch('/api/sign_up', {
       method: 'post',
+      credentials: 'include',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json'
       },
       body: JSON.stringify(user)
@@ -102,8 +105,12 @@ export function signIn(user) {
   return dispatch => {
     dispatch(requestSignIn())
      return fetch('/api/sign_in', {
+      credentials: 'include',
       method: 'post',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json'
+      mode: 'cors',
+      redirect: 'follow',
+      headers: { 'Accept': 'application/json',
+                 'Content-Type': 'application/json'
       },
       body: JSON.stringify(user)
       })

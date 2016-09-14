@@ -10,6 +10,7 @@ const HTML = ({ content, store }) => (
           <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" />
           <link rel="icon" href="./favicon.ico" type="image/x-icon" />
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     </head>
     <body>
     <div>

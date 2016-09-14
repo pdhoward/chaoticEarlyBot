@@ -66,7 +66,9 @@ export function welcomePage(username) {
 export function fetchChannels(user) {
   return dispatch => {
     dispatch(requestChannels())
-    return fetch(`/api/channels/${user}`)
+    return fetch(`/api/channels/${user}`, {
+      credentials: 'include'
+    })
       .then(response => response.json())
       .then(json => dispatch(receiveChannels(json)))
       .catch(error => {throw error});
@@ -95,7 +97,9 @@ function requestMessages() {
 export function fetchMessages(channel) {
   return dispatch => {
     dispatch(requestMessages())
-    return fetch(`/api/messages/${channel}`)
+    return fetch(`/api/messages/${channel}`, {
+      credentials: 'include'
+    })
       .then(response => response.json())
       .then(json => dispatch(receiveMessages(json, channel)))
       .catch(error => {throw error});
@@ -143,7 +147,9 @@ function receiveValidationList(json) {
 export function usernameValidationList() {
   return dispatch => {
     dispatch(loadingValidationList())
-    return fetch('/api/all_usernames')
+    return fetch('/api/all_usernames', {
+      credentials: 'include'
+    })
       .then(response => {
         return response.json()
     })
@@ -159,6 +165,7 @@ export function createMessage(message) {
     dispatch(addMessage(message))
     return fetch('/api/newmessage', {
       method: 'post',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -172,6 +179,7 @@ export function createChannel(channel) {
     dispatch(addChannel(channel))
     return fetch ('/api/channels/new_channel', {
       method: 'post',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },

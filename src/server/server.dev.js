@@ -3,6 +3,7 @@
 import express                    from 'express';
 import session                    from 'express-session';
 import cookieParser               from 'cookie-parser';
+import cookie                     from 'react-cookie';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
 import mongoose                   from 'mongoose';
@@ -20,6 +21,7 @@ import passport                   from 'passport';
 import favicon                    from 'serve-favicon';
 import SocketIo                   from 'socket.io';
 import bodyParser                 from 'body-parser'
+import url                        from 'url'
 import colors                     from 'colors'
 
 // configurations
@@ -53,23 +55,24 @@ const dbURI =       setup.SERVER.DB;
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////// Middleware Config ////////////////////////////
 //////////////////////////////////////////////////////////////////////
-
+app.use(cors());
+app.options('*', cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+app.use(cookieParser());
 app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
 app.use('/', express.static(path.join(__dirname, '../..', 'static')));
-app.use(cors());
-//app.options('*', cors());
 
 
 ///////////////////////////////////////////////////////////////////////
 /////////////////// database and session setup ////////////////////////
 //////////////////////////////////////////////////////////////////////
-mongoose.connect(dbURI);
-const MongoDBStore = require('connect-mongodb-session')(session);
+
+/*
+const MongoDBStore = require('connect-mongo')(session);
 
 const track = new MongoDBStore(
-      { uri: dbURI,
+      { url: dbURI,
         collection: 'tracksessions'});
 
 // Catch errors
@@ -82,14 +85,11 @@ const sessionSecret       = secrets.SECRETS.SESSIONSECRET;
 
 const sessionParms = {
     secret: sessionSecret,
-    saveUninitialized: false,
+    saveUninitialized: true,
     resave: true,
     cookie: {
-      secure: false,
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24 * 7 }, // 1week
-      store: track
-    }
+      maxAge: 600000}
+  }
 
 //allows us to use secure cookies in production but still test in dev
 // note cookie.secure is recommended but requires https enabled website
@@ -99,16 +99,16 @@ if (app.get('env') === 'production') {
     sessionParms.cookie.secure = true // serve secure cookies
    }
 
-//app.use(cookieParser(sessionSecret));
 app.use(session(sessionParms));
-
-process.on('uncaughtException', function (err) {
-  console.log(err);
-   });
-
-
+*/
 app.use(passport.initialize());
 app.use(passport.session());
+
+
+///////////////////////////////////////////////////////////////////////
+///////////////////         db setup           ////////////////////////
+//////////////////////////////////////////////////////////////////////
+mongoose.connect(dbURI);
 
 /////////////////////////////////////////////////////////////////////////////////////
 ///////////////////        Development Server Only        //////////////////////////
@@ -123,21 +123,26 @@ app.use(require('webpack-hot-middleware')(compiler));
 
 
 ///////////////////////////////////////////////////////////////////////
-///////////////manage session state via express.session///////////////
+///////////////    configure webserver for sessions    ///////////////
 //////////////////////////////////////////////////////////////////////
 
+app.use(function(req, res, next){
+	var keys;
+	console.log('-----------incoming request -------------'.green);
+	console.log('New ' + req.method + ' request for', req.url);
+	req.bag = {};											//create my object for my stuff
 
-app.get('/', function(req, res, next) {
-  var sessionState = req.session
+	req.bag.cookies = req.cookies;
+  console.log({cookie: req.cookies});
 
-  if (sessionState.views) {
-    sessionState.views++
-    } else {
-    sessionState.views = 1;
-    sessionState.user = req.body.username;
-    }
-  next();
-  })
+	var url_parts = url.parse(req.url, true);
+	req.parameters = url_parts.query;
+	keys = Object.keys(req.parameters);
+	if(req.parameters && keys.length > 0) console.log({parameters: req.parameters});		//print request parameters
+	keys = Object.keys(req.body);
+	if (req.body && keys.length > 0) console.log({body: req.body});						//print request body
+	next();
+});
 
 
 //////////////////////////////////////////////////////////////////////////
