@@ -35,13 +35,6 @@ import {HTML}                     from '../html/index';
 // security and oauth
 require('../../config/passport')(passport);
 
-/////////////////////////////////////////////////////////////////////////////////////////////
-////////Component and Configuration Related to the Development Server             /////////
-////////////////////////////////////////////////////////////////////////////////////////////
-import DevTools                   from '../common/containers/DevTools';
-import webpack                    from 'webpack';
-import webpackConfig              from '../../webpack.config.dev'
-const compiler =                  webpack(webpackConfig);
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////Create our server object with configurations -- either in the cloud or local/////////
@@ -52,17 +45,20 @@ const host =        setup.SERVER.HOST;
 const port =        setup.SERVER.PORT;
 const dbURI =       setup.SERVER.DB;
 
+// for express sessions and cookies
+const sessionSecret = secrets.SECRETS.SESSIONSECRET;
+
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////// Middleware Config ////////////////////////////
 //////////////////////////////////////////////////////////////////////
-app.use(cors());
-app.options('*', cors());
+app.use('/', express.static(path.join(__dirname, '../..', 'static')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
-app.use(cookieParser());
+app.use(cookieParser(sessionSecret));
 app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
-app.use('/', express.static(path.join(__dirname, '../..', 'static')));
 
+app.options('*', cors());
+app.use(cors());
 
 ///////////////////////////////////////////////////////////////////////
 /////////////////// database and session setup ////////////////////////
@@ -80,17 +76,20 @@ const track = new MongoDBStore(
     console.log("error with session store = " + error);
   });
 
+*/
 
-const sessionSecret       = secrets.SECRETS.SESSIONSECRET;
 
 const sessionParms = {
+    name: 'chaoticbots',
     secret: sessionSecret,
     saveUninitialized: true,
-    resave: true,
+    resave: false,
     cookie: {
+      secure: false,
+      httpOnly: false,
       maxAge: 600000}
   }
-
+/*
 //allows us to use secure cookies in production but still test in dev
 // note cookie.secure is recommended but requires https enabled website
 // trust proxy required if using nodejs behind a proxy (like ngnx)
@@ -98,9 +97,9 @@ if (app.get('env') === 'production') {
     app.set('trust proxy', 1) // trust first proxy
     sessionParms.cookie.secure = true // serve secure cookies
    }
-
-app.use(session(sessionParms));
 */
+app.use(session(sessionParms));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -109,6 +108,15 @@ app.use(passport.session());
 ///////////////////         db setup           ////////////////////////
 //////////////////////////////////////////////////////////////////////
 mongoose.connect(dbURI);
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+////////Component and Configuration Related to the Development Server             /////////
+////////////////////////////////////////////////////////////////////////////////////////////
+import DevTools                   from '../common/containers/DevTools';
+import webpack                    from 'webpack';
+import webpackConfig              from '../../webpack.config.dev'
+const compiler =                  webpack(webpackConfig);
 
 /////////////////////////////////////////////////////////////////////////////////////
 ///////////////////        Development Server Only        //////////////////////////
@@ -119,7 +127,7 @@ app.use(require('webpack-dev-middleware')(compiler, {
   publicPath: webpackConfig.output.publicPath
 }));
 
-app.use(require('webpack-hot-middleware')(compiler));
+//app.use(require('webpack-hot-middleware')(compiler));
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -127,14 +135,25 @@ app.use(require('webpack-hot-middleware')(compiler));
 //////////////////////////////////////////////////////////////////////
 
 app.use(function(req, res, next){
+
 	var keys;
 	console.log('-----------incoming request -------------'.green);
 	console.log('New ' + req.method + ' request for', req.url);
 	req.bag = {};											//create my object for my stuff
+  if (req.session.count) {
+    req.session.count++;
+    console.log("session count = " + req.session.count);
+  }
+  else{
+    req.session.count = 1;
+    console.log("session count = " + req.session.count);
+  }
 
-	req.bag.cookies = req.cookies;
   console.log({cookie: req.cookies});
-  console.log(req.headers);
+  console.log({session: req.session});
+  console.log({sessionStore: req.sessionStore});
+  console.log({reqheader: req.headers});
+
 	var url_parts = url.parse(req.url, true);
 	req.parameters = url_parts.query;
 	keys = Object.keys(req.parameters);

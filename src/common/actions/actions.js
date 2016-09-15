@@ -2,6 +2,7 @@ import * as types from '../constants/ActionTypes';
 import { browserHistory } from 'react-router';
 import fetch from 'isomorphic-fetch';
 import moment from 'moment';
+import axios from "axios";
 
 // NOTE:Chat actions
 
@@ -66,9 +67,7 @@ export function welcomePage(username) {
 export function fetchChannels(user) {
   return dispatch => {
     dispatch(requestChannels())
-    return fetch(`/api/channels/${user}`, {
-      credentials: 'include'
-    })
+    return axios(`/api/channels/${user}`)
       .then(response => response.json())
       .then(json => dispatch(receiveChannels(json)))
       .catch(error => {throw error});
@@ -97,9 +96,7 @@ function requestMessages() {
 export function fetchMessages(channel) {
   return dispatch => {
     dispatch(requestMessages())
-    return fetch(`/api/messages/${channel}`, {
-      credentials: 'include'
-    })
+    return axios(`/api/messages/${channel}`)
       .then(response => response.json())
       .then(json => dispatch(receiveMessages(json, channel)))
       .catch(error => {throw error});
@@ -147,9 +144,7 @@ function receiveValidationList(json) {
 export function usernameValidationList() {
   return dispatch => {
     dispatch(loadingValidationList())
-    return fetch('/api/all_usernames', {
-      credentials: 'include'
-    })
+    return axios('/api/all_usernames')
       .then(response => {
         return response.json()
     })
@@ -163,13 +158,12 @@ export function usernameValidationList() {
 export function createMessage(message) {
   return dispatch => {
     dispatch(addMessage(message))
-    return fetch('/api/newmessage', {
+    return axios('/api/newmessage', {
       method: 'post',
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(message)})
+      data: JSON.stringify(message)})
       .catch(error => {throw error});
   }
 }

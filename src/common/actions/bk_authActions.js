@@ -2,7 +2,6 @@ import * as types from '../constants/ActionTypes';
 import { browserHistory } from 'react-router';
 import fetch from 'isomorphic-fetch';
 import cookie from 'react-cookie';
-import axios from "axios";
 
 export function receiveAuth() {
   const user = cookie.load('username');
@@ -105,11 +104,14 @@ function receiveSignIn(username) {
 export function signIn(user) {
   return dispatch => {
     dispatch(requestSignIn())
-     return axios('/api/sign_in', {
+     return fetch('/api/sign_in', {
       method: 'post',
-      headers: {'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'},
-      data: JSON.stringify(user)
+      credentials: 'include',
+      redirect: 'follow',
+      headers: { 'Accept': 'application/json',
+                 'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(user)
       })
       .then(response => {
         if(response.ok) {

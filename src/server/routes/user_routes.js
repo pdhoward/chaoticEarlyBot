@@ -29,8 +29,10 @@ module.exports = function loadUserRoutes(router, passport) {
     res.json(req.user);
   });
 
-  router.post('/sign_in', passport.authenticate('local-login', { session: false}), function(req, res) {
-    res.json(req.user);  
+// router.post('/sign_in', passport.authenticate('local-login', { session: false}), function(req, res) {
+  router.post('/sign_in', passport.authenticate('local-login'), function(req, res) {
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.json(req.user);
   });
 
   router.get('/signout', function(req, res) {

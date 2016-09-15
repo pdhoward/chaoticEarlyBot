@@ -5,7 +5,7 @@ module.exports = {
   devtool: 'inline-source-map',
   entry: [
     'babel-polyfill',
-    'webpack-hot-middleware/client',
+//    'webpack-hot-middleware/client',
     './src/client/index'
   ],
   output: {
@@ -14,8 +14,8 @@ module.exports = {
     publicPath: '/dist/'
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin(),
+//    new webpack.HotModuleReplacementPlugin(),
+//    new webpack.NoErrorsPlugin(),
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(process.env.NODE_ENV || 'development')
@@ -23,26 +23,26 @@ module.exports = {
     })
   ],
   module: {
-    loaders: [
-      {
+    loaders: [{
         test: /\.js$/,
         loader: 'babel',
-        query: {
-          plugins: [
-            [
-              'react-transform', {
-                transforms: [{
-                  transform: 'react-transform-hmr',
-                  imports: ['react'],
-                  locals: ['module']
-                }, {
-                  transform: 'react-transform-catch-errors',
-                  imports: ['react', 'redbox-react']
-                }]
-              }
-            ]
-          ]
-        },
+        exclude: /node_modules/,
+//        query: {
+//          plugins: [
+//            [
+//              'react-transform', {
+//                transforms: [{
+//                  transform: 'react-transform-hmr',
+//                  imports: ['react'],
+//                  locals: ['module']
+//                }, {
+//                  transform: 'react-transform-catch-errors',
+//                  imports: ['react', 'redbox-react']
+//                }]
+//              }
+//            ]
+//          ]
+//        },
         include: [path.resolve(__dirname, 'src')]
       },
       {
