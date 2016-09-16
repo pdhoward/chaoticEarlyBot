@@ -103,12 +103,24 @@ function receiveSignIn(username) {
 }
 
 export function signIn(user) {
+
+  if (cookie.load('chaoticbots')) {
+    console.log("sign sends cookie = ")
+    const sendCookie = cookie.load('chaoticbots')
+  }
+  else {
+    const sendCookie = 'noCookie'
+  };
+
   return dispatch => {
     dispatch(requestSignIn())
      return axios('/api/sign_in', {
       method: 'post',
       headers: {'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'},
+                'Content-Type': 'application/json',
+                'xhrFields': {
+                    'withCredentials': true}
+                  },
       data: JSON.stringify(user)
       })
       .then(response => {

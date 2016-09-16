@@ -3,7 +3,7 @@
 import express                    from 'express';
 import session                    from 'express-session';
 import cookieParser               from 'cookie-parser';
-import cookie                     from 'react-cookie';
+import Cookies                    from 'cookies';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
 import mongoose                   from 'mongoose';
@@ -32,9 +32,6 @@ import routes                     from '../common/routes';
 import User                       from './models/User.js';
 import {HTML}                     from '../html/index';
 
-// security and oauth
-require('../../config/passport')(passport);
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////Create our server object with configurations -- either in the cloud or local/////////
@@ -45,8 +42,6 @@ const host =        setup.SERVER.HOST;
 const port =        setup.SERVER.PORT;
 const dbURI =       setup.SERVER.DB;
 
-// for express sessions and cookies
-const sessionSecret = secrets.SECRETS.SESSIONSECRET;
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////// Middleware Config ////////////////////////////
@@ -61,34 +56,51 @@ app.options('*', cors());
 app.use(cors());
 
 ///////////////////////////////////////////////////////////////////////
-/////////////////// database and session setup ////////////////////////
+///////////////////         db setup           ////////////////////////
+//////////////////////////////////////////////////////////////////////
+mongoose.connect(dbURI);
+
+///////////////////////////////////////////////////////////////////////
+/////////////////// session and session store setup ////////////////////////
 //////////////////////////////////////////////////////////////////////
 
-/*
+// security and oauth
+require('../../config/passport')(passport);
+
+// for express sessions and cookies
+const sessionSecret = secrets.SECRETS.SESSIONSECRET;
+
 const MongoDBStore = require('connect-mongo')(session);
 
 const track = new MongoDBStore(
-      { url: dbURI,
-        collection: 'tracksessions'});
-
-// Catch errors
-  track.on('error', function(error) {
-    console.log("error with session store = " + error);
-  });
-
-*/
-
+        { url: dbURI,
+          collection: 'sessions'});
 
 const sessionParms = {
-    name: 'chaoticbots',
-    secret: sessionSecret,
-    saveUninitialized: true,
-    resave: false,
-    cookie: {
+  name: 'chaoticbots',
+  secret: sessionSecret,
+  saveUninitialized: true,
+  resave: false,
+  store: track,
+  cookie: {
+      path: '/',
+      domain: 'localhost',
       secure: false,
       httpOnly: false,
-      maxAge: 600000}
+      maxAge: 1000*60*24}
   }
+
+
+// Catch errors
+track.on('error', function(error) {
+    console.log("error with session store = " + error);
+});
+
+app.use(session(sessionParms));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 /*
 //allows us to use secure cookies in production but still test in dev
 // note cookie.secure is recommended but requires https enabled website
@@ -98,16 +110,6 @@ if (app.get('env') === 'production') {
     sessionParms.cookie.secure = true // serve secure cookies
    }
 */
-app.use(session(sessionParms));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-///////////////////////////////////////////////////////////////////////
-///////////////////         db setup           ////////////////////////
-//////////////////////////////////////////////////////////////////////
-mongoose.connect(dbURI);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,40 +132,19 @@ app.use(require('webpack-dev-middleware')(compiler, {
 //app.use(require('webpack-hot-middleware')(compiler));
 
 
+/*
 ///////////////////////////////////////////////////////////////////////
-///////////////    configure webserver for sessions    ///////////////
+///////////////    configure response headers for sessions    ////////
 //////////////////////////////////////////////////////////////////////
 
-app.use(function(req, res, next){
-
-	var keys;
-	console.log('-----------incoming request -------------'.green);
-	console.log('New ' + req.method + ' request for', req.url);
-	req.bag = {};											//create my object for my stuff
-  if (req.session.count) {
-    req.session.count++;
-    console.log("session count = " + req.session.count);
-  }
-  else{
-    req.session.count = 1;
-    console.log("session count = " + req.session.count);
-  }
-
-  console.log({cookie: req.cookies});
-  console.log({session: req.session});
-  console.log({sessionStore: req.sessionStore});
-  console.log({reqheader: req.headers});
-
-	var url_parts = url.parse(req.url, true);
-	req.parameters = url_parts.query;
-	keys = Object.keys(req.parameters);
-	if(req.parameters && keys.length > 0) console.log({parameters: req.parameters});		//print request parameters
-	keys = Object.keys(req.body);
-	if (req.body && keys.length > 0) console.log({body: req.body});						//print request body
-	next();
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Credentials', true);
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
+    next();
 });
-
-
+*/
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////// API CATALOGUE /////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -173,8 +154,8 @@ const watsonRouter = express.Router();
 const usersRouter = express.Router();
 const channelRouter = express.Router();
 
-require('./routes/message_routes')(messageRouter);
 require('./routes/watson_routes')(watsonRouter);
+require('./routes/message_routes')(messageRouter);
 require('./routes/channel_routes')(channelRouter);
 require('./routes/user_routes')(usersRouter, passport);
 
@@ -182,6 +163,54 @@ app.use('/api', watsonRouter);
 app.use('/api', messageRouter);
 app.use('/api', usersRouter);
 app.use('/api', channelRouter);
+
+
+///////////////////////////////////////////////////////////////////////
+///////////////    configure webserver for sessions    ///////////////
+//////////////////////////////////////////////////////////////////////
+
+app.use(function(req, res, next){
+
+	var keys;
+	console.log('-----------incoming request -------------'.green);
+	console.log('New ' + req.method + ' request for', req.url);
+
+  if (req.session.count) {
+    req.session.count++;
+    console.log("session count = " + req.session.count);
+  }
+  else{
+    req.session.count = 1;
+    console.log("session count = " + req.session.count);
+  }
+
+  req.bag = req.session						//create my object for my stuff
+
+  console.log({cookie: req.cookies});
+  console.log({session: req.session});
+  console.log({reqheadercookie: req.get('cookie')});
+  console.log({rawHeaders: req.rawHeaders});
+
+  req.session.save(function(err){
+    if (err) console.log("error saving session".green + err);
+    console.log('>>SESSION SAVED<<'.green);
+    console.log({sessionID: req.sessionID});   ;
+    console.log('-----------------------'.green);
+
+  })
+
+	var url_parts = url.parse(req.url, true);
+	req.parameters = url_parts.query;
+	keys = Object.keys(req.parameters);
+
+	if(req.parameters && keys.length > 0)
+    console.log({parameters: req.parameters});		//print request parameters
+	keys = Object.keys(req.body);
+	if (req.body && keys.length > 0)
+    console.log({body: req.body});						//print request body
+
+	next();
+});
 
 
 
@@ -210,6 +239,15 @@ app.use(function (req, res) {
           <RouterContext {...renderProps}/>
         </Provider>
       )
+      const cookies = new Cookies(req,res); // cookie jar
+
+      console.log('>>DISPLAY COOKIE JAR<<'.green);
+      console.log(cookies.get('chaoticbots'));
+      console.log('-----------------------'.green);
+
+      console.log('>>setting res header <<'.green);
+      cookies.set('chaoticbots', 'unknown', sessionParms.cookie);
+      console.log('-----------------------'.green);
 
       res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
 

@@ -31,8 +31,21 @@ module.exports = function loadUserRoutes(router, passport) {
 
 // router.post('/sign_in', passport.authenticate('local-login', { session: false}), function(req, res) {
   router.post('/sign_in', passport.authenticate('local-login'), function(req, res) {
-    res.setHeader('Access-Control-Allow-Credentials', 'true')
+
+    console.log(">>> REQ HEADERS FOR SIGN IN <<<<".green);
+    console.log({reqheader: req.headers});
+    console.log({rawHeaders: req.rawHeaders});
+    console.log({reqheadercookie: req.get('cookie')});
+    console.log("---------------------".green);
+
     res.json(req.user);
+
+    res.on('finish', function() {
+        console.log(">>> RES HEADERS ON SIGN IN <<<<".green);
+        console.log({resheaders: res._headers});
+        console.log("---------------------".green);
+      });
+
   });
 
   router.get('/signout', function(req, res) {

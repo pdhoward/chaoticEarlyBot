@@ -30,6 +30,12 @@ module.exports = function(router) {
         return res.status(500).json({msg: 'internal server error'});
       }
       res.json(data);
+
+      res.on('finish', function() {
+          console.log(">>> RES HEADERS FOR FETCHING MESSAGES FOR CHANNEL  <<<<".green);
+          console.log({resheaders: res._headers});
+          console.log("---------------------".green);
+        });
     });
   })
 
@@ -48,6 +54,13 @@ module.exports = function(router) {
         return res.status(500).json({msg: 'internal server error'});
       }
       res.json(data);
+
+      res.on('finish', function() {
+          console.log(">>> RES HEADERS FOR POSTING NEW MESSAGE <<<<".green);
+          console.log({resheaders: res._headers});
+          console.log("---------------------".green);
+        });
+
     });
   });
 }

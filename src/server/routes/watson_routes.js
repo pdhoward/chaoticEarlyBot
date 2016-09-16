@@ -81,7 +81,20 @@ module.exports = function(router) {
     message.input.text = watsonMessage.text;
 
    // need a way to set message.context here
-    message.context = req.bag.context;
+    if (req.session.context) {
+      console.log('>>Retrieving saved context for next Watson Ping<<'.green);
+      console.log(req.session.context);
+      console.log('-----------------------'.green);
+      message.context = req.session.context;
+    };
+
+    if (req.session.count) {
+      req.session.count++;
+      console.log("Watson Session Working -- count = ".green + req.session.count);
+    }
+    else {
+      console.log("----Watson Dialogue Session Not Working----".green);
+    };
 
     if ( ! message.workspace_id || message.workspace_id === 'workspace-id' ) {
         return res.status( 500 );};
@@ -98,16 +111,23 @@ module.exports = function(router) {
       if ( err )  return res.status( err.code || 500 ).json( err );
 
       const newwatsonResponse = new watsonResponse(data);
-      req.bag.context = newwatsonResponse.context;
+      req.session.context = newwatsonResponse.context;
       console.log('>>req bag <<'.green);
       console.log(JSON.stringify(req.bag));
+      console.log('-----------------------'.green);
+
+      console.log('>>req session <<'.green);
+      console.log({cookie: req.cookies});
+      console.log({session: req.session});
+      console.log({reqheader: req.headers});
+      console.log({reqheadercookie: req.get('cookie')});
       console.log('-----------------------'.green);
 
       console.log('>>watson input<<'.green);
       console.log(message);
       console.log('-----------------------'.green);
 
-      console.log('>>watson response context<<'.green);
+      console.log('>>watson resp context -- saved to req session <<'.green);
       console.log(newwatsonResponse.context);
       console.log('-----------------------'.green);
 
@@ -132,7 +152,7 @@ module.exports = function(router) {
     //      watsonMessage.text = newwatsonResponse.output.text
     //      watsonMessage.user.username = "Watson";
   //        res.json(watsonMessage);
-          console.log(">>>Watson Message Saved<<<<");
+          console.log(">>>Watson Message Saved<<<<".green);
   //        console.log(watsonMessage);
 
           next()
