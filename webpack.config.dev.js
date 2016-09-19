@@ -6,7 +6,7 @@ module.exports = {
   entry: [
     'babel-polyfill',
 //    'webpack-hot-middleware/client',
-    './src/client/index'
+    './src/client/index.dev.js'
   ],
   output: {
     path: path.resolve(__dirname, './static/dist'),

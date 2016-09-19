@@ -1,5 +1,5 @@
-var Channel = require('../models/Channel');
-var bodyparser = require('body-parser');
+import Channel          from '../models/Channel';
+import bodyparser       from 'body-parser';
 
 module.exports = function(router) {
   router.use(bodyparser.json());

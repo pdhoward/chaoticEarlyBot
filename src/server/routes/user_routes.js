@@ -25,15 +25,28 @@ module.exports = function loadUserRoutes(router, passport) {
     failureRedirect: '/'
   }));
 
-  router.post('/sign_up', passport.authenticate('local-signup', { session: false}), function(req, res) {
+//  router.post('/sign_up', passport.authenticate('local-signup', { session: false}), function(req, res) {
+  router.post('/sign_up', passport.authenticate('local-signup'), function(req, res) {
+
+    console.log(">>> REQ HEADERS FOR SIGN UP <<<<".green);
+    console.log({rawHeaders: req.rawHeaders});
+    console.log({reqheadercookie: req.get('cookie')});
+    console.log("---------------------".green);
+
     res.json(req.user);
+
+    res.on('finish', function() {
+        console.log(">>> RES HEADERS ON SIGN UP <<<<".green);
+        console.log({resheaders: res._headers});
+        console.log("---------------------".green);
+      });
+
   });
 
-// router.post('/sign_in', passport.authenticate('local-login', { session: false}), function(req, res) {
+// router.post('/sign_in', passport.authenticate('local-login' { session: false }), function(req, res) {
   router.post('/sign_in', passport.authenticate('local-login'), function(req, res) {
 
     console.log(">>> REQ HEADERS FOR SIGN IN <<<<".green);
-    console.log({reqheader: req.headers});
     console.log({rawHeaders: req.rawHeaders});
     console.log({reqheadercookie: req.get('cookie')});
     console.log("---------------------".green);
@@ -43,6 +56,7 @@ module.exports = function loadUserRoutes(router, passport) {
     res.on('finish', function() {
         console.log(">>> RES HEADERS ON SIGN IN <<<<".green);
         console.log({resheaders: res._headers});
+        console.log({reqUser: req.user});
         console.log("---------------------".green);
       });
 

@@ -17,5 +17,12 @@ ReactDOM.render(
   <Provider store={store}>
     <Router children={routes} history={browserHistory} />
   </Provider>,
-  rootElement
-);
+  document.getElementById('root')
+)
+
+ReactDOM.render(
+  <Provider store={store}>
+    <DevTools/>
+  </Provider>,
+  document.getElementById('devtools')
+)

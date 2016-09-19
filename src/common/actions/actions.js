@@ -67,9 +67,20 @@ export function welcomePage(username) {
 export function fetchChannels(user) {
   return dispatch => {
     dispatch(requestChannels())
-    return axios(`/api/channels/${user}`)
-      .then(response => response.json())
-      .then(json => dispatch(receiveChannels(json)))
+    return axios(`/api/channels/${user}`, {
+      method: 'get',
+	    headers: {'Content-Type': 'application/json',
+		            'withCredentials': true,
+		            'Cache-Control': 'no-cache'
+                }
+    })
+//      .then(response => response.json())
+//      .then(json => dispatch(receiveChannels(json)))
+      .then(function(response){
+        console.log("----fetch channels -----")
+        console.log(response.data);
+        dispatch(receiveChannels(response.data))
+      })
       .catch(error => {throw error});
   }
 }
@@ -97,8 +108,13 @@ export function fetchMessages(channel) {
   return dispatch => {
     dispatch(requestMessages())
     return axios(`/api/messages/${channel}`)
-      .then(response => response.json())
-      .then(json => dispatch(receiveMessages(json, channel)))
+//      .then(response => response.json())
+//      .then(json => dispatch(receiveMessages(json, channel)))
+    .then(function(response){
+      console.log("----fetch messages -----")
+      console.log(JSON.stringify(response.data));
+      dispatch(receiveMessages(response.data, channel))
+    })
       .catch(error => {throw error});
   }
 }
@@ -144,7 +160,11 @@ function receiveValidationList(json) {
 export function usernameValidationList() {
   return dispatch => {
     dispatch(loadingValidationList())
-    return axios('/api/all_usernames')
+    return axios('/api/all_usernames', {
+      method: 'get',
+      headers: {'Content-Type': 'application/json',
+                'withCredentials': true}
+    })
       .then(response => {
         return response.json()
     })

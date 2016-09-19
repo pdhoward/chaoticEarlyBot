@@ -7,7 +7,8 @@ import { connect } from 'react-redux';
 import io from 'socket.io-client';
 
 const socket = io('', { path: '/api/chat' });
-const initialChannel = 'Lobby'; // NOTE: I hard coded this value for my example.  Change this as you see fit
+//const initialChannel = 'Lobby'; // NOTE: I hard coded this value for my example.  Change this as you see fit
+const initialChannel = '';
 
 class ChatContainer extends Component {
   componentWillMount() {

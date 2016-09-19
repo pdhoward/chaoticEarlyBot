@@ -67,12 +67,13 @@ export function signOut() {
 export function signUp(user) {
   return dispatch => {
     dispatch(requestSignUp())
-    return fetch('/api/sign_up', {
+    return axios('/api/sign_up', {
       method: 'post',
-      credentials: 'include',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json'
+      headers: { 'Accept': 'application/json',
+                 'Content-Type': 'application/json',
+                 'withCredentials': true
       },
-      body: JSON.stringify(user)
+      data: JSON.stringify(user)
       })
       .then(response => {
         if(response.ok) {
@@ -104,29 +105,19 @@ function receiveSignIn(username) {
 
 export function signIn(user) {
 
-  var sendCookie = ' ';
-  if (cookie.load('chaoticbots')) {
-    sendCookie = cookie.load('chaoticbots')
-    console.log("sign in sends cookie = " + sendCookie)
-  }
-  else {
-    sendCookie = 'noCookie'
-    console.log("sign in sends cookie = " + sendCookie)
-  };
-
   return dispatch => {
     dispatch(requestSignIn())
      return axios('/api/sign_in', {
       method: 'post',
-      headers: {'Content-Type': 'application/json'
-//                'withCredentials': true,
-//                'Cache-Control': 'no-cache'
+      headers: {'Content-Type': 'application/json',
+                'withCredentials': true,
+                'Cache-Control': 'no-cache'
                 },
       data: JSON.stringify(user)
       })
       .then(response => {
-        if(response.ok) {
-          cookie.save('username', user.username)
+        if(response.statusText == "OK") {
+          cookie.save('username', user.username)        
           dispatch(receiveSignIn(user.username));
           browserHistory.push('/chat');
         }

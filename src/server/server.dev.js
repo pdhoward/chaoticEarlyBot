@@ -6,7 +6,7 @@ import cookieParser               from 'cookie-parser';
 import Cookies                    from 'cookies';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
-import mongoose                   from 'mongoose';
+//import mongoose                   from 'mongoose';
 
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
@@ -58,7 +58,13 @@ app.use(cors());
 ///////////////////////////////////////////////////////////////////////
 ///////////////////         db setup           ////////////////////////
 //////////////////////////////////////////////////////////////////////
-mongoose.connect(dbURI);
+//mongoose.connect(dbURI);
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// Configure our Mongo server and set defaults////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+
+require('./db/mongoose')(dbURI);
 
 ///////////////////////////////////////////////////////////////////////
 /////////////////// session and session store setup ////////////////////////
@@ -131,20 +137,6 @@ app.use(require('webpack-dev-middleware')(compiler, {
 
 //app.use(require('webpack-hot-middleware')(compiler));
 
-
-/*
-///////////////////////////////////////////////////////////////////////
-///////////////    configure response headers for sessions    ////////
-//////////////////////////////////////////////////////////////////////
-
-app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Credentials', true);
-    res.header('Access-Control-Allow-Origin', req.headers.origin);
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
-    next();
-});
-*/
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////// API CATALOGUE /////////////////////////////
 ////////////////////////////////////////////////////////////////////////
@@ -240,15 +232,6 @@ app.use(function (req, res) {
         </Provider>
       )
       const cookies = new Cookies(req,res); // cookie jar
-
-      console.log('>>DISPLAY COOKIE JAR<<'.green);
-      console.log(cookies.get('chaoticbots'));
-      console.log('-----------------------'.green);
-
-      console.log('>>setting res header <<'.green);
-      cookies.set('chaoticbots', 'unknown', sessionParms.cookie);
-      console.log('-----------------------'.green);
-
       res.send('<!doctype html>\n' + renderToString(<HTML content={content} store={store}/>))
 
     }
