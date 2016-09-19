@@ -74,11 +74,9 @@ export function fetchChannels(user) {
 		            'Cache-Control': 'no-cache'
                 }
     })
-//      .then(response => response.json())
-//      .then(json => dispatch(receiveChannels(json)))
       .then(function(response){
         console.log("----fetch channels -----")
-        console.log(response.data);
+        console.log(JSON.stringify(response.data));
         dispatch(receiveChannels(response.data))
       })
       .catch(error => {throw error});
@@ -108,8 +106,6 @@ export function fetchMessages(channel) {
   return dispatch => {
     dispatch(requestMessages())
     return axios(`/api/messages/${channel}`)
-//      .then(response => response.json())
-//      .then(json => dispatch(receiveMessages(json, channel)))
     .then(function(response){
       console.log("----fetch messages -----")
       console.log(JSON.stringify(response.data));
@@ -165,12 +161,18 @@ export function usernameValidationList() {
       headers: {'Content-Type': 'application/json',
                 'withCredentials': true}
     })
-      .then(response => {
-        return response.json()
+    .then(function(response){
+      console.log("----USENAME VALIDATION LIST ------")
+      console.log(JSON.stringify(response))
+      console.log("----------------------------------")
+      return dispatch(receiveValidationList(response.map((item) => item.local.username)))
     })
-      .then(json => {
-        return dispatch(receiveValidationList(json.map((item) => item.local.username)))
-    })
+//      .then(response => {
+//        return response.json()
+//    })
+//      .then(json => {
+//        return dispatch(receiveValidationList(json.map((item) => item.local.username)))
+//    })
       .catch(error => {throw error});
   }
 }

@@ -76,7 +76,7 @@ export function signUp(user) {
       data: JSON.stringify(user)
       })
       .then(response => {
-        if(response.ok) {
+        if(response.statusText == "OK") {
           cookie.save('username', user.username)
           dispatch(receiveUser(user.username));
           browserHistory.push('/chat');
@@ -117,7 +117,7 @@ export function signIn(user) {
       })
       .then(response => {
         if(response.statusText == "OK") {
-          cookie.save('username', user.username)        
+          cookie.save('username', user.username)
           dispatch(receiveSignIn(user.username));
           browserHistory.push('/chat');
         }

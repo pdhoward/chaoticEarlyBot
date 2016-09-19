@@ -4,12 +4,14 @@ import Channel          from '../models/Channel';
 import mongoose         from 'mongoose';
 import colors           from 'colors';
 
+const limit = 1;
+
 const defaultChannel = {
   name: "Lobby"
 }
 
 function createDefaultChannel () {
-      Channel.findOne({}).exec(function (err, collection){
+      Channel.find({}).limit(limit).exec(function (err, collection){
           if(collection.length === 0) {
             var newChannel = new Channel(defaultChannel)
             newChannel.save(function (err, data) {
