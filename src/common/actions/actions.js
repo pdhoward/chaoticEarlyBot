@@ -165,7 +165,7 @@ export function usernameValidationList() {
       console.log("----USENAME VALIDATION LIST ------")
       console.log(JSON.stringify(response))
       console.log("----------------------------------")
-      return dispatch(receiveValidationList(response.map((item) => item.local.username)))
+      return dispatch(receiveValidationList(response.data.map((item) => item.local.username)))
     })
 //      .then(response => {
 //        return response.json()
