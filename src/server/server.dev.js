@@ -6,7 +6,6 @@ import cookieParser               from 'cookie-parser';
 import Cookies                    from 'cookies';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
-import nodemailer                 from 'nodemailer';
 
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
@@ -30,6 +29,7 @@ import secrets                    from './secrets';
 import configureStore             from '../common/store/configureStore'
 import routes                     from '../common/routes';
 import User                       from './models/User.js';
+import transport                  from '../../config/gmail';
 import {HTML}                     from '../html/index';
 
 
@@ -54,6 +54,7 @@ app.use(favicon(path.join(__dirname, '..', '..', '/static/favicon.ico')));
 
 app.options('*', cors());
 app.use(cors());
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,17 +118,7 @@ if (app.get('env') === 'production') {
 /////////////////// chaoticbot alerts on errors //////////////////////
 //////////////////////////////////////////////////////////////////////
 
-
-const transport = nodemailer.createTransport('SMTP', {
-  service: "Gmail",
-  auth: {
-    user: "chaoticbotshelp@gmail.com",
-    pass: "chaoticbotsx1o"
-  }
-})
-
-if (process.env.NODE_ENV === 'development') {
-  process.on('uncaughtException', function (er) {
+process.on('uncaughtException', function (er) {
     console.error(er.stack)
     transport.sendMail({
       from: 'info@xiollc.com',
@@ -139,7 +130,7 @@ if (process.env.NODE_ENV === 'development') {
        process.exit(1)
     })
   })
-}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////Component and Configuration Related to the Development Server             /////////
@@ -192,26 +183,15 @@ app.use(function(req, res, next){
 
   if (req.session.count) {
     req.session.count++;
-    console.log("session count = " + req.session.count);
   }
-  else{
+  else {
     req.session.count = 1;
-    console.log("session count = " + req.session.count);
   }
 
   req.bag = req.session						//create my object for my stuff
 
-  console.log({cookie: req.cookies});
-  console.log({session: req.session});
-  console.log({reqheadercookie: req.get('cookie')});
-  console.log({rawHeaders: req.rawHeaders});
-
   req.session.save(function(err){
     if (err) console.log("error saving session".green + err);
-    console.log('>>SESSION SAVED<<'.green);
-    console.log({sessionID: req.sessionID});   ;
-    console.log('-----------------------'.green);
-
   })
 
 	var url_parts = url.parse(req.url, true);

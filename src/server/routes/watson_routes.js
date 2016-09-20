@@ -3,7 +3,7 @@
 ///////////////////////////// Watson Routes /////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-import chatMessage            from '../models/Message';
+import ChatMessage            from '../models/Message';
 import watsonResponse         from '../models/WatsonResponse';
 import bodyparser             from 'body-parser';
 import moment                 from 'moment';
@@ -43,11 +43,11 @@ const message = {
 }
 
 const buildMessageToSend = {
-  id: `${Date.now()}${uuid.v4()}`,
+  id: '',
   channelID: '',
   text: '',
   user: '',
-  time: moment.utc().format('lll')
+  time: Number
 
 }
 
@@ -75,25 +75,16 @@ module.exports = function(router) {
     var io = req.app.get('socketio');
 
     // for every new message emitted -- Watson looks at it and responds
-    const watsonMessage = new chatMessage(req.body);
+    const watsonMessage = new ChatMessage(req.body);
 
     //prepare message to send to Watson
     message.input.text = watsonMessage.text;
 
-   // need a way to set message.context here
+   // If session context exists, need to use it for next Watson iteration
+   // It means we've already launched a discussion
     if (req.session.context) {
-      console.log('>>Retrieving saved context for next Watson Ping<<'.green);
-      console.log(req.session.context);
-      console.log('-----------------------'.green);
       message.context = req.session.context;
-    };
-
-    if (req.session.count) {
       req.session.count++;
-      console.log("Watson Session Working -- count = ".green + req.session.count);
-    }
-    else {
-      console.log("----Watson Dialogue Session Not Working----".green);
     };
 
     if ( ! message.workspace_id || message.workspace_id === 'workspace-id' ) {
@@ -105,61 +96,38 @@ module.exports = function(router) {
     buildMessageToSend.user = watsonUserID;
     buildID = `${Date.now()}${uuid.v4()}`;
     buildMessageToSend.id = buildID;
+    buildMessageToSend.time = moment.utc().format('lll');
 
     // Send the input to the Watson conversation service
     conversation.message( message, function(err, data) {
       if ( err )  return res.status( err.code || 500 ).json( err );
 
+      //prepare to save watson message to mongodb collection
       const newwatsonResponse = new watsonResponse(data);
       req.session.context = newwatsonResponse.context;
-      console.log('>>req bag <<'.green);
-      console.log(JSON.stringify(req.bag));
-      console.log('-----------------------'.green);
-
-      console.log('>>req session <<'.green);
-      console.log({cookie: req.cookies});
-      console.log({session: req.session});
-      console.log({reqheader: req.headers});
-      console.log({reqheadercookie: req.get('cookie')});
-      console.log('-----------------------'.green);
-
-      console.log('>>watson input<<'.green);
-      console.log(message);
-      console.log('-----------------------'.green);
-
-      console.log('>>watson resp context -- saved to req session <<'.green);
-      console.log(newwatsonResponse.context);
-      console.log('-----------------------'.green);
-
-      console.log('>>watson output<<'.green);
-      console.log(newwatsonResponse.output.text[0]);
-      console.log('-----------------------'.green);
 
       //build and broadcast message
       buildMessageToSend.text = newwatsonResponse.output.text[0];
-      console.log('>>Broadcast Message<<'.green);
-      console.log(buildMessageToSend);
-      console.log('-----------------------'.green);
-
       io.to(buildMessageToSend.channelID).emit('new bc message', buildMessageToSend);
 
-      // save watson message
+      //prepare to save the watson chat response to mongodb collection
+      const newChatMessage = new ChatMessage(buildMessageToSend);
+
+      // save watson messages
       newwatsonResponse.save(function (err, data) {
-          if(err) {
+          if (err) {
             console.log(err);
-            return res.status(500).json({msg: 'internal server error'});
-            }
-    //      watsonMessage.text = newwatsonResponse.output.text
-    //      watsonMessage.user.username = "Watson";
-  //        res.json(watsonMessage);
-          console.log(">>>Watson Message Saved<<<<".green);
-  //        console.log(watsonMessage);
-
-          next()
-
+            return res.status(500).json({msg: 'internal server error'}); }
+          newChatMessage.save(function (err, data) {
+            if (err) {
+              console.log(err);
+              return res.status(500).json({msg: 'internal server error'}); }
+            next()
+          });
         });
-      });
 
+
+      });
     });
   }
 

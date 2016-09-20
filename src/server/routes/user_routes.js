@@ -3,8 +3,18 @@
 /////////////USER AUTHENTICATION/////////////////////
 ////////////////////////////////////////////////////
 
-const bodyparser =              require('body-parser');
+import transport                from '../../../config/gmail';
+import bodyparser               from 'body-parser';
+import colors                   from 'colors';
+
 const User =                    require('../models/User.js');
+
+const mailObject = {
+  from: '"ChaoticBots 👥" <chaoticbotshelp@gmail.com>',
+  to: 'patrick.howard@hotmail.com',
+  subject: 'Another Member Boarded the Platform',
+  text: 'ChaoticBots continues to serve the globe. '
+}
 
 //////////////////////////////////////////////
 ///////////// routes ////////////////////////
@@ -33,7 +43,16 @@ module.exports = function loadUserRoutes(router, passport) {
 
   router.post('/sign_in', passport.authenticate('local-login'), function(req, res) {
     res.json(req.user);
-  });
+
+    res.on('finish', function() {
+
+      transport.sendMail(mailObject, function (error, info) {
+            if (error) console.log(error);
+            console.log("User login. Gmail notification sent ".green);
+          })
+        })
+
+    });
 
   router.get('/signout', function(req, res) {
     req.logout();

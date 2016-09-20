@@ -24,29 +24,22 @@ module.exports = function(router) {
 
   // query DB for messages for a specific channel
   router.get('/messages/:channel', function(req, res) {
-    Message.find({channelID: req.params.channel}, {id: 1, channelID: 1, text: 1, user: 1, time: 1, _id: 0}, function(err, data) {
-      if(err) {
-        console.log(err);
-        return res.status(500).json({msg: 'internal server error'});
-      }
-      res.json(data);
+//    Message.find({channelID: req.params.channel}, {id: 1, channelID: 1, text: 1, user: 1, time: 1, _id: 0}, function(err, data) {
+      Message.find({channelID: req.params.channel}, {id: 1, channelID: 1, text: 1, user: 1, time: 1, _id: 0})
+             .sort({id: 'ascending'})
+             .exec(function(err, data) {
+                if(err) {
+                    console.log(err);
+                    return res.status(500).json({msg: 'internal server error'});
+                  }
+                res.json(data);
 
-      res.on('finish', function() {
-          console.log(">>> RES HEADERS FOR FETCHING MESSAGES FOR CHANNEL  <<<<".green);
-          console.log({resheaders: res._headers});
-          console.log("---------------------".green);
-        });
-    });
-  })
+            });
+          })
 
   //post a new message to db
   router.post('/newmessage', function(req, res) {
     var newMessage = new Message(req.body);
-
-    console.log(">>> USER TEXT<<<<".red);
-    console.log(newMessage);
-    console.log(">>> RAW TEXT<<<<".red);
-    console.log(req.body);
 
     newMessage.save(function (err, data) {
       if(err) {
@@ -54,12 +47,6 @@ module.exports = function(router) {
         return res.status(500).json({msg: 'internal server error'});
       }
       res.json(data);
-
-      res.on('finish', function() {
-          console.log(">>> RES HEADERS FOR POSTING NEW MESSAGE <<<<".green);
-          console.log({resheaders: res._headers});
-          console.log("---------------------".green);
-        });
 
     });
   });
