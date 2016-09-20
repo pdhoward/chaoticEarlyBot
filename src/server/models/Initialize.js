@@ -2,12 +2,15 @@
 
 import Channel          from '../models/Channel';
 import mongoose         from 'mongoose';
+import uuid             from 'node-uuid';
 import colors           from 'colors';
 
 const limit = 1;
 
 const defaultChannel = {
-  name: "Lobby"
+  name: "Lobby",
+  id: `${Date.now()}${uuid.v4()}`,
+  private: false
 }
 
 function createDefaultChannel () {

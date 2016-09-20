@@ -6,7 +6,7 @@ import cookieParser               from 'cookie-parser';
 import Cookies                    from 'cookies';
 import serialize                  from 'serialize-javascript'
 import path                       from 'path';
-//import mongoose                   from 'mongoose';
+import nodemailer                 from 'nodemailer';
 
 import { renderToString }         from 'react-dom/server'
 import { Provider }               from 'react-redux'
@@ -113,6 +113,33 @@ if (app.get('env') === 'production') {
    }
 */
 
+///////////////////////////////////////////////////////////////////////
+/////////////////// chaoticbot alerts on errors //////////////////////
+//////////////////////////////////////////////////////////////////////
+
+
+const transport = nodemailer.createTransport('SMTP', {
+  service: "Gmail",
+  auth: {
+    user: "chaoticbotshelp@gmail.com",
+    pass: "chaoticbotsx1o"
+  }
+})
+
+if (process.env.NODE_ENV === 'development') {
+  process.on('uncaughtException', function (er) {
+    console.error(er.stack)
+    transport.sendMail({
+      from: 'info@xiollc.com',
+      to: 'chaoticbotshelp@gmail.com',
+      subject: er.message,
+      text: er.stack
+    }, function (er) {
+       if (er) console.error(er)
+       process.exit(1)
+    })
+  })
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 ////////Component and Configuration Related to the Development Server             /////////

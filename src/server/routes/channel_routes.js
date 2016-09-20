@@ -32,6 +32,9 @@ module.exports = function(router) {
 
   // post a new user to channel list db
   router.post('/channels/new_channel', function(req, res) {
+    console.log("--------creating new channel -----------");
+    console.log(req.body);
+
     var newChannel = new Channel(req.body);
     newChannel.save(function (err, data) {
       if(err) {

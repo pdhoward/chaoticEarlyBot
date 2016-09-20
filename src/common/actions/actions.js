@@ -162,17 +162,8 @@ export function usernameValidationList() {
                 'withCredentials': true}
     })
     .then(function(response){
-      console.log("----USENAME VALIDATION LIST ------")
-      console.log(JSON.stringify(response))
-      console.log("----------------------------------")
       return dispatch(receiveValidationList(response.data.map((item) => item.local.username)))
     })
-//      .then(response => {
-//        return response.json()
-//    })
-//      .then(json => {
-//        return dispatch(receiveValidationList(json.map((item) => item.local.username)))
-//    })
       .catch(error => {throw error});
   }
 }
@@ -183,7 +174,8 @@ export function createMessage(message) {
     return axios('/api/newmessage', {
       method: 'post',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'withCredentials': true
       },
       data: JSON.stringify(message)})
       .catch(error => {throw error});
@@ -193,13 +185,13 @@ export function createMessage(message) {
 export function createChannel(channel) {
   return dispatch => {
     dispatch(addChannel(channel))
-    return fetch ('/api/channels/new_channel', {
+    return axios ('/api/channels/new_channel', {
       method: 'post',
-      credentials: 'include',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'withCredentials': true
       },
-      body: JSON.stringify(channel)})
+      data: JSON.stringify(channel)})
       .catch(error => {throw error});
   }
 }

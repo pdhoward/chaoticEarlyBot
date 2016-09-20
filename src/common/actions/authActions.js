@@ -50,11 +50,9 @@ function receiveSignOut() {
 export function signOut() {
   return dispatch => {
     dispatch(requestSignOut())
-    return fetch('/api/signout', {
-      credentials: 'include'
-    })
+    return axios('/api/signout')
       .then(response => {
-        if(response.ok) {
+        if (response.statusText == "OK") {
           cookie.remove('username')
           dispatch(receiveSignOut())
           browserHistory.push('/')
