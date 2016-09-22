@@ -24,7 +24,6 @@ module.exports = function(router) {
 
   // query DB for messages for a specific channel
   router.get('/messages/:channel', function(req, res) {
-//    Message.find({channelID: req.params.channel}, {id: 1, channelID: 1, text: 1, user: 1, time: 1, _id: 0}, function(err, data) {
       Message.find({channelID: req.params.channel}, {id: 1, channelID: 1, text: 1, user: 1, time: 1, _id: 0})
              .sort({id: 'ascending'})
              .exec(function(err, data) {

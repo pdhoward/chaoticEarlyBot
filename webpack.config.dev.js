@@ -27,22 +27,24 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel',
         exclude: /node_modules/,
-//        query: {
-//          plugins: [
-//            [
-//              'react-transform', {
-//                transforms: [{
-//                  transform: 'react-transform-hmr',
-//                  imports: ['react'],
-//                  locals: ['module']
-//                }, {
-//                  transform: 'react-transform-catch-errors',
-//                  imports: ['react', 'redbox-react']
-//                }]
-//              }
-//            ]
-//          ]
-//        },
+/*
+        query: {
+         plugins: [
+            [
+              'react-transform', {
+                transforms: [{
+                  transform: 'react-transform-hmr',
+                  imports: ['react'],
+                  locals: ['module']
+                }, {
+                  transform: 'react-transform-catch-errors',
+                  imports: ['react', 'redbox-react']
+                }]
+              }
+            ]
+          ]
+        },
+*/
         include: [path.resolve(__dirname, 'src')]
       },
       {

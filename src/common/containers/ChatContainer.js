@@ -5,10 +5,14 @@ import Chat from '../components/Chat';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import io from 'socket.io-client';
+import channelDefault from '../../../config/channelDefault.js';
 
 const socket = io('', { path: '/api/chat' });
-//const initialChannel = 'Lobby'; // NOTE: I hard coded this value for my example.  Change this as you see fit
-const initialChannel = '';
+
+const initialChannel = channelDefault.INITIALCHANNEL.name;
+
+console.log("----------chatContainer -----------")
+console.log({"initialChannel": initialChannel});
 
 class ChatContainer extends Component {
   componentWillMount() {

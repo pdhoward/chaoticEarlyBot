@@ -59,6 +59,7 @@ app.use(cors());
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Configure our Mongo server and set defaults////////////////////////////
+///////////////// This also enables a the set of recognized channels for Watson/////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 require('./db/mongoose')(dbURI);
@@ -118,14 +119,17 @@ if (app.get('env') === 'production') {
 /////////////////// chaoticbot alerts on errors //////////////////////
 //////////////////////////////////////////////////////////////////////
 
+const mailObject = {
+  from: '"ChaoticBots 👥" <chaoticbotshelp@gmail.com>',
+  to: 'patrick.howard@hotmail.com',
+  subject: 'Platform Error',
+  text: ''
+}
+
 process.on('uncaughtException', function (er) {
     console.error(er.stack)
-    transport.sendMail({
-      from: 'info@xiollc.com',
-      to: 'chaoticbotshelp@gmail.com',
-      subject: er.message,
-      text: er.stack
-    }, function (er) {
+    mailObject.text = er.stack;
+    transport.sendMail(mailObject, function (er) {
        if (er) console.error(er)
        process.exit(1)
     })

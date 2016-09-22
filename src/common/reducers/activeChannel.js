@@ -1,9 +1,7 @@
 import { CHANGE_CHANNEL } from '../constants/ActionTypes';
+import channelDefault from '../../../config/channelDefault.js';
 
-const initialState = {
-  name: 'Lobby',
-  id: 0
-};
+const initialState = channelDefault.INITIALCHANNEL;
 
 export default function activeChannel(state = initialState, action) {
   switch (action.type) {
