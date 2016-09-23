@@ -1,8 +1,7 @@
-import * as types from '../constants/ActionTypes';
-import { browserHistory } from 'react-router';
-import fetch from 'isomorphic-fetch';
-import cookie from 'react-cookie';
-import axios from "axios";
+import * as types               from '../constants/ActionTypes';
+import { browserHistory }       from 'react-router';
+import cookie                   from 'react-cookie';
+import axios                    from "axios";
 
 export function receiveAuth() {
   const user = cookie.load('username');

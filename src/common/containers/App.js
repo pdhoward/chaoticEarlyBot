@@ -7,19 +7,13 @@
 
 import React, { Component, PropTypes }  from 'react';
 import { Link }                         from 'react-router';
-import {initEnvironment, syncChannel}   from '../actions/actions';
+import {initEnvironment}   from '../actions/actions';
 import { connect }                      from 'react-redux';
-import channelDefault                   from '../../../config/channelDefault.js';
-
-const initialChannel = channelDefault.INITIALCHANNEL.name;
 
 class App extends React.Component {
-
   componentDidMount() {
     const {dispatch} = this.props;
     dispatch(initEnvironment());
-    dispatch(syncChannel(initialChannel));   // this is to resync id of initialized Channel
-    
   }
 
   render() {

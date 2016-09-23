@@ -109,12 +109,6 @@ module.exports = function(router) {
       //build and broadcast message
       buildMessageToSend.text = newwatsonResponse.output.text[0];
       io.to(buildMessageToSend.channelID).emit('new bc message', buildMessageToSend);
-
-
-        console.log("-------send raw message ------- ")
-        console.log(JSON.stringify(buildMessageToSend))
-        console.log("----------------------------------- ")
-
       //prepare to save the watson chat response to mongodb collection
       const newChatMessage = new ChatMessage(buildMessageToSend);
 
