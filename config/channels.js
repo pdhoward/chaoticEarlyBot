@@ -8,7 +8,13 @@ var uuid = require('node-uuid');
 
 // list of channels with conversation scripts enabled
 
-const configureChannels = [{
+const configureChannels = [
+  {
+    name: "Welcome",
+    id: `${Date.now()}${uuid.v4()}`,
+    private: false
+  },
+  {
     name: "Books",
     id: `${Date.now()}${uuid.v4()}`,
     private: false

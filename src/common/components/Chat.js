@@ -26,23 +26,42 @@ export default class Chat extends Component {
     }
   }
   componentDidMount() {
-    const { socket, user, dispatch } = this.props;
+    const { socket, user, dispatch, activeChannel } = this.props;
+
+    console.log("---------chat mounted -------------")
+    console.log(activeChannel);
+
+    const defaultChannel = {
+      name: activeChannel
+    }
+
+    socket.emit('join channel', defaultChannel);    // initializing for default channel
+
+
     socket.emit('chat mounted', user);
+
+
+
     socket.on('new bc message', msg =>
       dispatch(actions.receiveRawMessage(msg))
     );
+
     socket.on('typing bc', user =>
       dispatch(actions.typing(user))
     );
+
     socket.on('stop typing bc', user =>
       dispatch(actions.stopTyping(user))
     );
+
     socket.on('new channel', channel =>
       dispatch(actions.receiveRawChannel(channel))
     );
+
     socket.on('receive socket', socketID =>
       dispatch(authActions.receiveSocket(socketID))
     );
+
     socket.on('receive private channel', channel =>
       dispatch(actions.receiveRawChannel(channel))
     );

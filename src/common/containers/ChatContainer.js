@@ -1,27 +1,33 @@
-import React, { Component, PropTypes } from 'react';
-import * as actions from '../actions/actions';
-import {receiveAuth} from '../actions/authActions';
-import Chat from '../components/Chat';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import io from 'socket.io-client';
-import channelDefault from '../../../config/channelDefault.js';
 
-const socket = io('', { path: '/api/chat' });
+
+///////////////////////////////////////////////////////////////////////
+///////////////////////////// CHAT CONTAINER///////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+import async                            from 'async';
+import React, { Component, PropTypes }  from 'react';
+import { bindActionCreators }           from 'redux';
+import { connect }                      from 'react-redux';
+import io                               from 'socket.io-client';
+import * as actions                     from '../actions/actions';
+import {receiveAuth}                    from '../actions/authActions';
+import Chat                             from '../components/Chat';
+import channelDefault                   from '../../../config/channelDefault.js';
 
 const initialChannel = channelDefault.INITIALCHANNEL.name;
 
-console.log("----------chatContainer -----------")
-console.log({"initialChannel": initialChannel});
+const socket = io('', { path: '/api/chat' });
 
 class ChatContainer extends Component {
   componentWillMount() {
     const { dispatch, user } = this.props;
     if(!user.username) {
       dispatch(receiveAuth());
-    }
-    dispatch(actions.fetchMessages(initialChannel));
+    };
+
     dispatch(actions.fetchChannels(user.username));
+    dispatch(actions.fetchMessages(initialChannel));  
+
   }
   render() {
     return (

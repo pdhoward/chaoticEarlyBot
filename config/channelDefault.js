@@ -4,7 +4,10 @@
 //////////////////////////////////////////////////////////////////////
 var configureChannels  = require('./channels');
 
-console.log("-------channeldefaults-------");
-console.log({'configureChannels ': configureChannels[0]})
+const initialChannelName = configureChannels[0].name;
+const initialChannelID = configureChannels[0].id;
 
-exports.INITIALCHANNEL = configureChannels[0];
+exports.INITIALCHANNEL = {
+                          name: initialChannelName,
+                          id: initialChannelID
+                        }

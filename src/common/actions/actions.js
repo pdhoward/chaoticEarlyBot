@@ -14,6 +14,11 @@ function addMessage(message) {
 }
 
 export function receiveRawMessage(message) {
+
+  console.log("-------receive raw message ------- ")
+  console.log(message)
+  console.log("----------------------------------- ")
+
   return {
     type: types.RECEIVE_MESSAGE,
     message
@@ -21,6 +26,11 @@ export function receiveRawMessage(message) {
 }
 
 export function receiveRawChannel(channel) {
+
+    console.log("-------receive raw channel ------- ")
+    console.log(message)
+    console.log("----------------------------------- ")
+
   return {
     type: types.RECEIVE_CHANNEL,
     channel
@@ -83,6 +93,44 @@ export function fetchChannels(user) {
   }
 }
 
+// the purpose of this action - executed on chatcontainer load - is to sync the id of the default channel
+// loaded with platform with the action id record in mongodb -- otherwise messages do load properly
+
+export function syncChannel(channel) {
+    return dispatch => {
+      dispatch(requestSync())
+
+      return axios(`/api/channels/sync_channel/${channel}`, {
+        method: 'get',
+	       headers: {'Content-Type': 'application/json',
+		               'withCredentials': true,
+		               'Cache-Control': 'no-cache'
+                  }
+        })
+          .then(function(response){
+            console.log("----default channel -----")
+            console.log(JSON.stringify(response.data));
+            dispatch(changeChannel(response.data))          // updates active channel with required id
+            dispatch(requestSyncSuccess())
+        })
+          .catch(error => {throw error});
+  }
+}
+
+function requestSync() {
+  return {
+    type: types.SYNC_CHANNEL
+  }
+}
+
+function requestSyncSuccess() {
+  return {
+    type: types.SYNC_CHANNEL_SUCCESS
+  }
+}
+
+//////////////////////////////////////////////////////////
+
 function requestChannels() {
   return {
     type: types.LOAD_CHANNELS
@@ -103,6 +151,11 @@ function requestMessages() {
 }
 
 export function fetchMessages(channel) {
+
+  console.log("------fetch messages -----")
+  console.log({channel: channel})
+  console.log("--------------------------")
+
   return dispatch => {
     dispatch(requestMessages())
     return axios(`/api/messages/${channel}`)

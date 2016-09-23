@@ -1,4 +1,9 @@
-import { ADD_CHANNEL, RECEIVE_CHANNEL, LOAD_CHANNELS, LOAD_CHANNELS_SUCCESS, LOAD_CHANNELS_FAIL, AUTH_SIGNOUT_SUCCESS} from '../constants/ActionTypes';
+
+
+import { ADD_CHANNEL, RECEIVE_CHANNEL, LOAD_CHANNELS,
+         LOAD_CHANNELS_SUCCESS, LOAD_CHANNELS_FAIL,
+         AUTH_SIGNOUT_SUCCESS, SYNC_CHANNEL, SYNC_CHANNEL_SUCCESS,
+          SYNC_CHANNEL_FAIL}                    from '../constants/ActionTypes';
 
 const initialState = {
   loaded: false,
@@ -35,6 +40,22 @@ export default function channels(state = initialState, action) {
     return {...state,
       loading: false,
       loaded: false,
+      error: action.error,
+      data: [...state.data]
+    };
+  case SYNC_CHANNEL:
+      return {...state,
+        syncing: true
+      };
+  case SYNC_CHANNEL_SUCCESS:
+    return {...state,
+      syncing: false,
+      synced: true
+    };
+  case SYNC_CHANNEL_FAIL:
+    return {...state,
+      syncing: false,
+      synced: false,
       error: action.error,
       data: [...state.data]
     };
