@@ -1,5 +1,3 @@
-
-
 ///////////////////////////////////////////////////////////////////////
 ////////configure the set of active watson channels      //////////////
 //////////////////////////////////////////////////////////////////////
@@ -11,17 +9,17 @@ var uuid = require('node-uuid');
 const configureChannels = [
   {
     name: "Welcome",
-    id: `${Date.now()}${uuid.v4()}`,
+    id: '${Date.now()}${uuid.v4()}',
     private: false
   },
   {
     name: "Books",
-    id: `${Date.now()}${uuid.v4()}`,
+    id: '${Date.now()}${uuid.v4()}',
     private: false
   },
   {
     name: "Blockchain",
-    id: `${Date.now()}${uuid.v4()}`,
+    id: '${Date.now()}${uuid.v4()}',
     private: false
   }]
 
